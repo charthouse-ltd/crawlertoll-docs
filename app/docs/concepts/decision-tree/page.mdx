@@ -1,0 +1,109 @@
+export const metadata = {
+  title: "Decision tree",
+  description: "Exactly when CrawlerToll returns allow / 402 / block.",
+};
+
+# Decision tree
+
+Every adapter — Express, Fastify, Hono, Next, WordPress — funnels into the same `decide()` function in `@crawlertoll/core`. The decision tree is small and explicit. Here's what it does, in order:
+
+## Inputs
+
+`decide()` takes a `DecideInput`:
+
+- `request` — method, authority (host), targetUri, path, headers
+- `policy` — optional `RslPolicy` (parsed) or raw robots.txt text
+- `offer` — optional `PaymentOffer` (used when the verdict is 402)
+- `verifyAuth` — whether to verify Web Bot Auth signatures (default true)
+- `trustVerifiedBots` — whether a valid signature overrides the policy (default false)
+
+## The tree
+
+```
+detectBot(headers)
+  │
+  ├── isBot === false ───────────────────────────────────────▶  ALLOW (not-a-bot)
+  │
+  └── isBot === true
+       │
+       ├── verifyAuth && hasSignatureHeaders ─▶ verifyWebBotAuth()
+       │     │
+       │     └── records verified ∈ { valid, no-signature, bad-signature, expired, ... }
+       │
+       ├── policy ?
+       │     │
+       │     ├── matchAgent(policy, userAgent) ─▶ rslGroup
+       │     │
+       │     ├── trustVerifiedBots && verified.valid ── ─ ─ ─▶  ALLOW (trust-verified-bot)
+       │     │
+       │     └── matchPath(rslGroup, path)
+       │           │
+       │           ├── allowed ─────────────────────────────▶  ALLOW (rsl-allow)
+       │           │
+       │           └── disallowed
+       │                 │
+       │                 ├── rslGroup.compensation && offer ─▶ 402 (rsl-charge)
+       │                 │
+       │                 └── else ─────────────────────────▶  BLOCK (rsl-block)
+       │
+       └── no policy ?
+             │
+             ├── offer ─────────────────────────────────────▶ 402 (default-charge)
+             │
+             └── else ──────────────────────────────────────▶ ALLOW (default-allow)
+```
+
+## The output
+
+```ts
+interface Decision {
+  action: "allow" | "402" | "block";
+  bot: BotDetection;              // who the request claims to be
+  authVerified?: WbaVerifyResult; // crypto verification, if it ran
+  rslGroup?: RslAgentGroup;       // matched policy group, if any
+  reasons: string[];              // trace of every rule that fired
+  built?: Built402Response;       // the response to send, when action === "402"
+}
+```
+
+The `reasons` trace is the single best debugging tool. Every decision carries the full reasoning chain: `["ua-match:GPTBot", "wba:valid", "rsl-group:gptbot,claudebot", "rsl-path:disallow:deny", "rsl-charge"]`. Log it for every request and you have the full audit trail.
+
+## Edge cases
+
+### Bot with valid Web Bot Auth, no RSL policy
+
+`decide({ request, offer })` where the request is a verified GPTBot. With no policy and an offer set, the default branch is "default-charge". To exempt verified bots, set `trustVerifiedBots: true` — but the more common pattern is to declare a policy where verified bots have an explicit `Permits` entry.
+
+### Unknown UA but signed request
+
+A non-catalogued UA carrying `Signature-Input` headers still hits the bot path. `detectBot` flags `isBot: true` based on signature presence even when no catalogue entry matches. Web Bot Auth verification still runs.
+
+### Multiple `User-agent` lines
+
+RSL inherits robots.txt's "consecutive UA lines form one group" rule. So:
+
+```
+User-agent: GPTBot
+User-agent: ClaudeBot
+Disallow: /
+```
+
+is one group matching both UAs. `matchAgent` picks the most-specific UA token (longest substring match); a literal `*` is the catch-all of last resort.
+
+### Allow vs Disallow ties
+
+Per [RFC 9309](https://www.rfc-editor.org/rfc/rfc9309.html) (2022), longest-match wins, and **Allow ties beat Disallow**:
+
+```
+User-agent: GPTBot
+Allow: /articles
+Disallow: /articles
+```
+
+`/articles/123` → **allowed** (tie at length 9, Allow wins).
+
+## See also
+
+- [RSL 1.0 standard](/docs/standards/rsl-1-0) — what the policy directives mean
+- [Web Bot Auth](/docs/standards/web-bot-auth) — what the verification step does
+- [HTTP 402](/docs/standards/http-402) — what the 402 response looks like

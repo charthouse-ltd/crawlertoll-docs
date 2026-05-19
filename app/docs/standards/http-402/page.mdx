@@ -1,0 +1,98 @@
+export const metadata = {
+  title: "HTTP 402",
+  description: "Payment Required — the response shape Cloudflare ships >1 billion times per day.",
+};
+
+# HTTP 402
+
+HTTP 402 — **Payment Required** — sat dormant in RFC 7231 for a decade. It became operational in 2025 when Cloudflare launched pay-per-crawl. Cloudflare reports **>1 billion HTTP 402 responses per day** as of Q1 2026 through its customisable 402 message feature.
+
+The shape is straightforward:
+
+- Status `402`
+- `Crawler-Price` header announcing the price
+- `Crawler-Price-Rail` header announcing the settlement rail
+- `Link` headers pointing at payment URL + description + terms
+- `Retry-After` for cooperative bots
+- JSON body with a structured payment offer
+
+## What CrawlerToll emits
+
+```http
+HTTP/1.1 402 Payment Required
+Content-Type: application/json; charset=utf-8
+Crawler-Price: 5000 micros USD
+Crawler-Price-Rail: x402
+Retry-After: 60
+Link: <https://pay.example.com/abc>; rel="payment"; type="x402",
+      <https://example.com/.well-known/context-license.json>; rel="describedby"; type="application/json",
+      <https://example.com/ai-terms>; rel="terms-of-service"
+
+{
+  "error": "payment_required",
+  "message": "Payment required.",
+  "offer": {
+    "rail": "x402",
+    "priceMicros": 5000,
+    "currency": "USD",
+    "paymentUrl": "https://pay.example.com/abc",
+    "publisher": "example",
+    "endpoint": "search"
+  }
+}
+```
+
+## How to build one
+
+```ts
+import { build402, applyTo, toWebResponse } from "@crawlertoll/core/http402";
+
+const built = build402({
+  offer: {
+    rail: "x402",
+    priceMicros: 5000,
+    currency: "USD",
+    paymentUrl: "https://pay.example.com/abc",
+    publisher: "example",
+    endpoint: "search",
+  },
+  contextLicenseUrl: "https://example.com/.well-known/context-license.json",
+  termsUrl: "https://example.com/ai-terms",
+});
+
+applyTo(res, built);          // Node: Express, Fastify, http
+return toWebResponse(built);  // Fetch: Cloudflare Workers, Hono, Bun, Deno
+```
+
+## Settlement rail enum
+
+The `offer.rail` field tells the buyer where to settle:
+
+| Value | Description |
+|---|---|
+| `x402` | Coinbase + LF x402 stablecoin rail |
+| `tollbit` | TollBit hosted paywall |
+| `skyfire` | Skyfire KYAPay token |
+| `cloudflare-ppc` | Cloudflare Pay Per Crawl |
+| `stripe-acp` | Stripe Agentic Commerce Protocol |
+| `context-license` | Per the publisher's /.well-known/context-license.json |
+| `custom` | Bring your own |
+
+See [settlement rails](/docs/concepts/settlement-rails) for a comparison.
+
+## Why micros?
+
+A "micro" is one millionth of a currency unit. USDC has 6 decimals — `5000` atomic units = `0.005 USDC` = `$0.005`. The same unit works across USDC, USD, EUR, GBP. Integer-safe at JS-number precision up to ~$9 quadrillion per call, which should be enough.
+
+## Cloudflare interop
+
+Cloudflare's pay-per-crawl uses the same `Crawler-Price` / `Crawler-Price-Rail` header shape at the CDN tier. If you run CrawlerToll at the application layer AND PPC at the edge, both fire — PPC handles unauthenticated edge enforcement, CrawlerToll handles fine-grained per-route policy. They compose, they don't compete.
+
+## Conformance
+
+9 vitest tests cover: 402 status code, header presence, `Crawler-Price` format, Link rel composition, structured JSON body, `applyTo` Node-shape integration, `toWebResponse` Fetch-shape integration, micros↔major conversion, invalid-price rejection. All green.
+
+## See also
+
+- [x402 standard](/docs/standards/x402) — the agent-payment rail that pairs naturally with HTTP 402
+- [Settlement rails](/docs/concepts/settlement-rails) — pick a rail

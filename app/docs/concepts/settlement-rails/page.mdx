@@ -1,0 +1,76 @@
+export const metadata = {
+  title: "Settlement rails",
+  description: "Comparison of x402, TollBit, Skyfire, Cloudflare PPC, Stripe ACP.",
+};
+
+# Settlement rails
+
+CrawlerToll emits the 402 with a structured payment offer. Actual settlement happens on whichever rail you chose. Six options today:
+
+| Rail | What | Best for | Adapter |
+|---|---|---|---|
+| **`x402`** | Coinbase + LF stablecoin rail (USDC on Base etc.) | Agent-native, no human-tier vendor | [`@crawlertoll/x402`](https://www.npmjs.com/package/@crawlertoll/x402) |
+| **`tollbit`** | TollBit hosted paywall, 15-25% commission | Established publisher network | Coming (partnership-gated) |
+| **`skyfire`** | Skyfire KYAPay token rail | KYC-friendly agent payments | Coming (partnership-gated) |
+| **`cloudflare-ppc`** | Cloudflare Pay Per Crawl edge enforcement | If you already run on CF Enterprise | Coming (partnership-gated) |
+| **`stripe-acp`** | Stripe Agentic Commerce Protocol | Fiat-native commerce, EUR/USD/GBP | Coming (partnership-gated) |
+| **`context-license`** | Per the publisher's `/.well-known/context-license.json` offer | The publisher publishes their own quote | Built in via the spec |
+| **`custom`** | Bring your own | When none of the above fit | — |
+
+## Picking a rail
+
+### Pick `x402` if:
+- You want **agent-native, settled in seconds** — no human payment portal in the loop
+- Stablecoin denomination (USDC) is acceptable
+- You want **maximum vendor-neutrality** — x402 is LF-governed, no single company owns it
+- This is the **default** the playbook recommends as "likely the dominant settlement rail for paid crawls over the next 12-18 months"
+
+### Pick `tollbit` if:
+- You're already a TollBit publisher
+- You want the hosted-paywall convenience + their 7,000+ publisher BD relationships
+- 15-25% commission is acceptable in exchange for managed integration
+
+### Pick `skyfire` if:
+- You need KYC on the agent side (`KYAPay`)
+- You want a token rail without committing to a specific stablecoin
+
+### Pick `cloudflare-ppc` if:
+- You're on Cloudflare Enterprise + already in the PPC closed beta
+- You want edge-level enforcement *and* application-tier policy (use CrawlerToll + PPC together)
+
+### Pick `stripe-acp` if:
+- Your buyers are AI agents tied to a Stripe-managed wallet (Link, Agentic Commerce Suite)
+- Fiat-native settlement matters more than stablecoin throughput
+
+### Pick `context-license` if:
+- You publish your own `/.well-known/context-license.json` with a custom payment URL
+- The buyer SDK should read pricing + payout from your file rather than your 402 response
+
+### Pick `custom` if:
+- None of the above fit
+- You want to signal "contact us" via the `paymentUrl`
+
+## They can coexist
+
+A single publisher can run multiple rails simultaneously. The 402 response sets one preferred rail in the `Crawler-Price-Rail` header, but the body's `offer` object can declare a separate `accepts[]` array (x402-style) listing multiple options.
+
+Cloudflare PPC + CrawlerToll is a particularly clean compose: PPC runs at the edge for the unauthenticated case, CrawlerToll runs at the app layer for finer-grained per-route policy.
+
+## What changes per rail in practice
+
+Just the `offer.rail` value (and optionally `offer.paymentUrl`). The `Crawler-Price` header still announces `<micros> <currency>`. The body still carries `error: "payment_required"`. The `Link rel="payment"` still points at the settlement URL when applicable. Switching rails is a one-line config change, not a re-integration.
+
+## Stability + governance
+
+| Rail | Stability | Governance |
+|---|---|---|
+| x402 | High — v2 spec (Dec 2025), LF foundation (Apr 2026) | Linux Foundation x402 Foundation |
+| TollBit | Established product (Lightspeed-backed, Series A) | Private company |
+| Skyfire | Funded but earlier-stage ($9.5M) | Private company |
+| Cloudflare PPC | Closed beta as of Q2 2026 | Cloudflare |
+| Stripe ACP | Launched Stripe Sessions 2026 | Stripe |
+
+## See also
+
+- [HTTP 402 standard](/docs/standards/http-402) — the response shape that carries the offer
+- [x402 standard](/docs/standards/x402) — deep-dive into the agent-native rail

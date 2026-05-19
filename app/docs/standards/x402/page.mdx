@@ -1,0 +1,112 @@
+export const metadata = {
+  title: "x402",
+  description: "Coinbase + Linux Foundation agent-payment rail. The default rail for paid crawls.",
+};
+
+# x402
+
+**x402** is the Coinbase-launched, now-Linux-Foundation-governed agent-payment standard. It defines a payment protocol that rides natively on HTTP 402 — agents sign authorizations with their wallet, retry the request with an `X-PAYMENT` header, and the publisher verifies + settles via a facilitator.
+
+- **Spec**: [x402.org / whitepaper](https://www.x402.org/x402-whitepaper.pdf)
+- **Foundation**: Linux Foundation x402 Foundation (contributed April 2026)
+- **Founding coalition**: AWS, Anthropic, Circle, Cloudflare, Google, Microsoft, Stripe, Visa, Mastercard, NEAR, Chainlink
+- **Adoption signal**: 119M Base transactions + 35M Solana transactions, ~$600M annualised volume
+
+## What CrawlerToll implements
+
+`@crawlertoll/x402` is the publisher-side adapter:
+
+```ts
+import {
+  defineQuote,
+  buildX402_402,
+  verifyPaymentFromHeaders,
+} from "@crawlertoll/x402";
+
+// 1. Build the 402 for an unpaid request.
+const quote = defineQuote({
+  payTo: process.env.PUBLISHER_WALLET!,
+  amountAtomic: "5000",                     // $0.005 USDC
+  resource: "https://example.com/api/articles",
+  description: "Article access",
+});
+
+const built = buildX402_402({ accepts: [quote] });
+// → 402 with x402 v2 body + CF-shape headers
+
+// 2. On retry with X-PAYMENT, verify via facilitator.
+const result = await verifyPaymentFromHeaders(req.headers, {
+  facilitatorUrl: "https://api.cdp.coinbase.com/platform/v2/x402/verify",
+  facilitatorApiKey: process.env.CDP_KEY,
+  resource: "https://example.com/api/articles",
+  expectedNetwork: "base",
+});
+
+if (result.valid) {
+  // serve the protected content
+}
+```
+
+## Facilitator choices
+
+The x402 spec is facilitator-agnostic. Three production-ready options:
+
+| Facilitator | URL | Auth |
+|---|---|---|
+| **Coinbase CDP** | `https://api.cdp.coinbase.com/platform/v2/x402/verify` | Bearer API key |
+| **Cloudflare** | Bundled with Workers' `withX402Client` | Cloudflare account |
+| **Self-hosted** | Any URL implementing the x402 facilitator API | Up to you |
+
+The adapter is rail-agnostic — point `facilitatorUrl` at any compliant implementation.
+
+## Multi-network quotes
+
+Sites that accept payment on multiple chains can declare a quote per network:
+
+```ts
+import { defineQuotePerNetwork, buildX402_402 } from "@crawlertoll/x402";
+
+const quotes = defineQuotePerNetwork(
+  {
+    payTo: "0x...",
+    amountAtomic: "5000",
+    resource: "https://example.com/api/articles",
+  },
+  ["base", "polygon", "arbitrum", "optimism"],
+);
+
+const built = buildX402_402({ accepts: quotes });
+```
+
+Each quote picks the canonical USDC contract address for its network automatically (see `USDC_CONTRACTS` export).
+
+## Supported networks (v0.1)
+
+| Network | USDC contract |
+|---|---|
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
+| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` |
+| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` |
+| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` |
+
+For other assets (USDT, PYUSD, etc.), pass `asset` + `extra` to `defineQuote()` explicitly.
+
+## Why we don't bundle web3 libs
+
+Signature verification + on-chain settlement are the facilitator's job. Bundling viem / ethers would double the package size and duplicate work the facilitator already does cryptographically. The adapter is the publisher-side HTTP gate; the facilitator is the cryptographic verifier. Clean boundary, 17.8 KB tarball.
+
+## v0.1 scope
+
+- **Scheme**: `"exact"` only. The `"upTo"` micropayment scheme ships in v0.2.
+- **Networks**: 6 EVM chains. Solana support ships in v0.2.
+
+## Conformance
+
+28 vitest tests across three suites (quote building, header parse/encode, facilitator verify via fake fetch). All green.
+
+## See also
+
+- [HTTP 402 standard](/docs/standards/http-402) — the response shape x402 rides on
+- [Settlement rails](/docs/concepts/settlement-rails) — comparison vs TollBit / Skyfire / Cloudflare PPC / Stripe ACP

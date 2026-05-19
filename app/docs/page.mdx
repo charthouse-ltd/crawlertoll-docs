@@ -1,0 +1,52 @@
+export const metadata = {
+  title: "Overview",
+  description: "What CrawlerToll is, what it isn't, and where to start.",
+};
+
+# Overview
+
+CrawlerToll is **open-source Node middleware for the AI-crawler economy**. It implements the four standards that consolidated around AI-crawler monetization in 2025–2026 — [RSL 1.0](/docs/standards/rsl-1-0), [Web Bot Auth](/docs/standards/web-bot-auth), [HTTP 402](/docs/standards/http-402), and [x402](/docs/standards/x402) — in a vendor-neutral library you can audit, fork, and run on any framework.
+
+## What it does
+
+On every incoming request, the middleware:
+
+1. **Detects** AI crawlers via a curated catalogue of 30+ operators (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, Meta-ExternalAgent, Bytespider, CCBot, Cohere, Mistral, etc.).
+2. **Verifies** cryptographic identity if the request carries Web Bot Auth signatures (Ed25519 + RFC 9421 HTTP Message Signatures per IETF `draft-meunier-web-bot-auth-architecture-05`).
+3. **Applies** your RSL 1.0 robots.txt policy.
+4. **Issues** HTTP 402 with Cloudflare-shape `Crawler-Price` / `Crawler-Price-Rail` / `Link` headers + a structured JSON payment offer when policy says so. Or 403 (block). Or 200 (allow) — with the decision forwarded to your route handlers via headers.
+
+## What it doesn't do
+
+- **Settle payments.** It emits the 402 with a payment offer. Actual settlement happens on whichever rail you chose — [x402](/docs/standards/x402), TollBit, Skyfire, Cloudflare Pay Per Crawl, or Stripe ACP. Adapter packages are separate.
+- **Replace a CDN.** It runs at the application layer. Cloudflare / Akamai / Fastly handle edge-level concerns; CrawlerToll handles fine-grained policy where edge rules don't reach.
+- **Block scrapers that ignore robots.txt.** Headless-browser scraping requires edge-level enforcement no application middleware can provide. CrawlerToll detects identified crawlers and applies policy; CF Bot Management or similar handles the rest.
+
+## Where to start
+
+Pick your framework — wiring is one line in all of them:
+
+- [Express](/docs/getting-started/express) (Node, Express 4 + 5)
+- [Fastify](/docs/getting-started/fastify) (Node, Fastify 4 + 5)
+- [Hono](/docs/getting-started/hono) (Cloudflare Workers, Bun, Deno, Vercel Edge, Node)
+- [Next.js](/docs/getting-started/next) (App Router middleware, Edge runtime)
+- [WordPress](/docs/getting-started/wordpress) (PHP plugin, 30+ AI crawler catalogue)
+
+Or use the framework-agnostic [`@crawlertoll/core`](https://www.npmjs.com/package/@crawlertoll/core) `decide()` function directly.
+
+## How it's organised
+
+| Layer | What |
+|---|---|
+| Decision engine | `@crawlertoll/core` — bot detection + Web Bot Auth + RSL 1.0 + HTTP 402 |
+| Framework adapters | `@crawlertoll/express`, `@crawlertoll/fastify`, `@crawlertoll/hono`, `@crawlertoll/next` |
+| Settlement rails | `@crawlertoll/x402` (more coming) |
+| Publisher tooling | `@crawlertoll/publisher` — CLI + SDK for context-license.json |
+| Buyer tooling | `@crawlertoll/client` — discover, query, verify attestation |
+| Validators | `@crawlertoll/parser` — context-license.json schema validator |
+
+All Apache 2.0. All on npm. Code on GitHub at [`github.com/nhrzxxw9dn-web`](https://github.com/nhrzxxw9dn-web).
+
+## Want to know the design choices?
+
+Read the [decision tree](/docs/concepts/decision-tree), the [settlement-rails comparison](/docs/concepts/settlement-rails), and the [privacy posture](/docs/concepts/privacy).

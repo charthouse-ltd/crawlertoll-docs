@@ -1,0 +1,77 @@
+export const metadata = {
+  title: "Fastify",
+  description: "Wire CrawlerToll into a Fastify 4 or 5 app in one line.",
+};
+
+# Getting started with Fastify
+
+The `@crawlertoll/fastify` plugin is idiomatic — wrapped in `fastify-plugin` so the request decoration and `onRequest` hook propagate to the parent encapsulation scope by default.
+
+## Install
+
+```bash
+npm install @crawlertoll/fastify @crawlertoll/core fastify
+```
+
+## Sixty seconds
+
+```ts
+import Fastify from "fastify";
+import crawlertoll from "@crawlertoll/fastify";
+
+const app = Fastify();
+
+await app.register(crawlertoll, {
+  offer: {
+    rail: "x402",
+    priceMicros: 5000,
+    currency: "USD",
+  },
+  contextLicenseUrl: "https://example.com/.well-known/context-license.json",
+  termsUrl: "https://example.com/ai-terms",
+});
+
+app.get("/", async () => "hello");
+await app.listen({ port: 3000 });
+```
+
+## Per-request decision API
+
+The plugin decorates `FastifyRequest` via module augmentation, so handlers get typed access automatically:
+
+```ts
+app.get("/articles/:id", async (request, _reply) => {
+  const decision = request.crawlertoll;
+  if (decision?.bot.isBot) {
+    request.log.info(
+      { operator: decision.bot.entry?.operator, action: decision.action },
+      "crawler decision",
+    );
+  }
+  return { id: (request.params as { id: string }).id };
+});
+```
+
+The decoration runs in the `onRequest` hook — the earliest lifecycle hook — so it's available in every subsequent hook (`preHandler`, `preValidation`, route handlers, `onResponse`, error handlers).
+
+## Encapsulation note
+
+The plugin is wrapped in [`fastify-plugin`](https://github.com/fastify/fastify-plugin) so the decorator + hook apply to the parent scope (not just the encapsulated context). That's the right default — you almost always want crawler enforcement to apply to your entire app.
+
+If you want it scoped to a sub-tree only (e.g. `/api/*`):
+
+```ts
+app.register(async (scoped) => {
+  await scoped.register(crawlertoll, { /* options */ });
+  scoped.get("/", async () => "scoped");
+}, { prefix: "/api" });
+```
+
+## Options
+
+Same surface as [Express](/docs/getting-started/express). See the [`@crawlertoll/fastify` README](https://github.com/nhrzxxw9dn-web/crawlertoll-fastify-js) for the full list.
+
+## Next steps
+
+- [Hono adapter](/docs/getting-started/hono) — for the edge-runtime equivalent of Fastify (Cloudflare Workers, Bun, Deno, Vercel Edge)
+- [Decision tree](/docs/concepts/decision-tree) — when allow / 402 / block fires

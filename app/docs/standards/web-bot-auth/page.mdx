@@ -1,0 +1,108 @@
+export const metadata = {
+  title: "Web Bot Auth",
+  description: "IETF draft-meunier-web-bot-auth-architecture-05 — cryptographic bot identity over HTTP Message Signatures.",
+};
+
+# Web Bot Auth
+
+**Web Bot Auth** is the IETF draft for cryptographic bot identity over HTTP. A bot operator publishes Ed25519 public keys at a well-known URL on their domain. Every request the bot makes carries an RFC 9421 HTTP Message Signature, signed with the matching secret key. Publishers verify the signature, look up the public key in the bot's directory, and gain cryptographic certainty about the requester's identity.
+
+- **Spec**: [draft-meunier-web-bot-auth-architecture-05](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/) (March 2026)
+- **Underlying RFC**: [RFC 9421](https://www.rfc-editor.org/rfc/rfc9421.html) (HTTP Message Signatures, Feb 2024)
+- **Key thumbprint**: [RFC 7638](https://www.rfc-editor.org/rfc/rfc7638.html)
+- **Algorithm**: Ed25519 (the only algorithm the spec allows in v0.1)
+
+## Adopters
+
+| Operator | Role |
+|---|---|
+| **Cloudflare** | Verifier (network-wide) |
+| **AWS WAF** | Verifier (Nov 2025) |
+| **Akamai** | Verifier |
+| **OpenAI** | Signer — Operator + ChatGPT-agent traffic |
+| **Google** | Signer (experimental, `agent.bot.goog`, Mar 2026) |
+| **Block (Goose)** | Signer |
+| **Browserbase** | Signer |
+| **Vercel** | Verifier |
+| **Shopify** | Verifier (merchant-side crawler auth) |
+
+Anthropic, Perplexity, Mistral — not yet publicly committed as of Q2 2026.
+
+## How it works
+
+```
+   Bot                                Publisher
+   ───                                ─────────
+
+1. Generate Ed25519 keypair
+2. Publish public key as JWKS at
+   /.well-known/http-message-signatures-directory
+3. Sign each outbound request with secret key
+
+                    ──HTTP request──▶
+                    Signature-Input: sig1=("@authority" "signature-agent");
+                                          keyid="<thumbprint>";alg="ed25519"
+                    Signature: sig1=:<base64>:
+                    Signature-Agent: "https://bot.example/"
+
+                                          4. Parse Signature-Input header
+                                          5. Fetch bot's JWKS directory
+                                          6. Find key by thumbprint
+                                          7. Reconstruct signature base
+                                          8. Ed25519 verify
+                                          9. allow / charge / block
+```
+
+## What CrawlerToll implements
+
+`@crawlertoll/core/wba` ships the full verifier:
+
+```ts
+import { verifyWebBotAuth } from "@crawlertoll/core/wba";
+
+const result = await verifyWebBotAuth({
+  method: "GET",
+  authority: "example.com",
+  targetUri: "/articles/1",
+  headers: {
+    "signature-input": req.headers["signature-input"],
+    "signature": req.headers["signature"],
+    "signature-agent": req.headers["signature-agent"],
+  },
+});
+
+if (result.valid) {
+  console.log("verified bot", result.signatureAgent, "keyid", result.keyid);
+} else {
+  console.log("failed:", result.reason, result.detail);
+  // reason ∈ { no-signature | malformed | expired | future-dated |
+  //            key-not-found | bad-signature | unsupported-alg }
+}
+```
+
+Implementation details:
+
+- **Structured-field parser** for `Signature-Input` (RFC 8941 subset scoped to WBA)
+- **Signature-base builder** per RFC 9421 §2.5 — supports `@authority`, `@method`, `@target-uri`, `@path`, `@query`, `signature-agent` components
+- **JWKS fetcher** with 1-hour in-process cache + RFC 7638 thumbprint matching
+- **Ed25519 verify** via [`@noble/ed25519`](https://github.com/paulmillr/noble-ed25519) — pure JS, runs on Node 20+, Bun, Deno, Cloudflare Workers
+- **Temporal checks** — expired / future-dated rejection with configurable clock-skew (default 60s)
+
+## v0.1 scope
+
+- **Ed25519 only.** The spec allows ed25519 only in the current draft.
+- **Public key from JWKS thumbprint or `kid` field.** Whichever matches.
+- **Components covered**: `@authority`, `@method`, `@target-uri`, `@path`, `@query`, `signature-agent`. Unknown components return `unsupported-component` rather than silently passing.
+
+## Conformance
+
+10 vitest tests cover: structured-field parsing, signature-base construction, real Ed25519 sign↔verify roundtrip, expired-signature rejection, tampered-authority rejection, wrong-key-in-JWKS rejection, unsupported-algorithm rejection. All green.
+
+## Want to be a verified bot operator?
+
+The IETF draft is at [datatracker.ietf.org](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/). Cloudflare publishes an integration guide at [developers.cloudflare.com](https://developers.cloudflare.com/). Stytch + Fingerprint also publish how-tos.
+
+## See also
+
+- [Decision tree](/docs/concepts/decision-tree) — when WBA verification short-circuits a 402
+- [Privacy posture](/docs/concepts/privacy) — what the verifier does and doesn't log

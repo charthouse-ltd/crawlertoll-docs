@@ -1,0 +1,84 @@
+export const metadata = {
+  title: "WordPress",
+  description: "Install the WordPress plugin. 30+ AI crawlers, RSL 1.0 policy, HTTP 402.",
+};
+
+# Getting started with WordPress
+
+The CrawlerToll WordPress plugin is dual-licensed Apache-2.0 OR GPL-2.0-or-later. PHP 7.4+. WordPress 6.0+.
+
+## Install
+
+### From the plugin directory (when listed)
+
+1. WordPress admin → **Plugins → Add New**
+2. Search for `CrawlerToll`
+3. **Install** and **Activate**
+
+### From the GitHub repo
+
+```bash
+cd wp-content/plugins
+git clone https://github.com/nhrzxxw9dn-web/crawlertoll-wp crawlertoll
+```
+
+Then activate via the WordPress admin.
+
+## Sixty seconds
+
+After activation, enforcement is live with sensible defaults:
+
+- 8 AI crawler User-Agents blocked by default (GPTBot, ClaudeBot, PerplexityBot, CCBot, Google-Extended, Applebot-Extended, Meta-ExternalAgent, Bytespider)
+- Compensation declared at 5,000 micros USD ($0.005) per crawl
+- `/wp-content/uploads/` always allowed
+- `*` catch-all is `Disallow:` (all other crawlers pass through)
+
+Test it:
+
+```bash
+curl -sI -H 'user-agent: GPTBot/1.2' https://your-site.example/
+# → HTTP/2 402
+# → crawler-price: 5000 micros USD
+# → crawler-price-rail: x402
+```
+
+## Customising
+
+Settings → CrawlerToll. Five fields:
+
+| Field | Default | Description |
+|---|---|---|
+| Enabled | on | Turn enforcement on/off without uninstalling |
+| Price (micros) | 5000 | 5000 = $0.005 per crawl |
+| Currency | USD | USD / USDC / EUR / GBP |
+| Rail | x402 | x402 / tollbit / skyfire / cloudflare-ppc / stripe-acp / custom |
+| Payment URL | (empty) | Settlement-rail-specific paywall URL |
+| Terms-of-use URL | (empty) | Surfaced as `Link rel="terms-of-service"` |
+| RSL 1.0 policy | (default) | Raw RSL 1.0 robots.txt directives |
+
+## How it integrates with WordPress
+
+| Surface | Behaviour |
+|---|---|
+| `parse_request` action | Decision runs as early as possible — sub-millisecond cost |
+| `robots_txt` filter | RSL directives appended to the existing /robots.txt |
+| REST API | `/wp-json/crawlertoll/v1/context-license` |
+| Rewrite rule | `/.well-known/context-license.json` proxies cleanly |
+| Admin menu | Settings → CrawlerToll |
+| `wp_options` | Single key `crawlertoll_settings` stores all configuration |
+
+## Compatibility
+
+- **WP Super Cache / W3 Total Cache / WP Rocket**: works. The plugin returns 402 *before* the cache layer runs.
+- **Cloudflare APO**: works.
+- **Multisite**: works per-site.
+- **REST API / WP-CLI / cron / xmlrpc**: skipped — those surfaces don't enforce.
+
+## Web Bot Auth note
+
+Web Bot Auth verification is intentionally omitted from the WP plugin v0.1. PHP shared hosting often disables outbound HTTP, making JWKS fetch unreliable. The cheap UA + RSL gate is the value here; cryptographic-identity verification stays in the Node ecosystem ([@crawlertoll/core](/docs/getting-started/hono)).
+
+## Next steps
+
+- [Decision tree](/docs/concepts/decision-tree) — when allow / 402 / block fires
+- [Settlement rails](/docs/concepts/settlement-rails) — pick a payment rail

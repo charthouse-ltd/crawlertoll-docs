@@ -1,0 +1,118 @@
+export const metadata = {
+  title: "Next.js",
+  description: "Drop CrawlerToll into your middleware.ts. Runs at the Vercel Edge.",
+};
+
+# Getting started with Next.js
+
+The `@crawlertoll/next` middleware is a single-function export for your `middleware.ts`. Runs at the Vercel Edge runtime by default.
+
+## Install
+
+```bash
+npm install @crawlertoll/next @crawlertoll/core
+```
+
+`next` is a peer dependency — already in your project.
+
+## Sixty seconds
+
+Create or edit `middleware.ts` at your project root (or `src/middleware.ts`):
+
+```ts
+import { crawlertoll } from "@crawlertoll/next";
+
+export default crawlertoll({
+  offer: {
+    rail: "x402",
+    priceMicros: 5000,
+    currency: "USD",
+  },
+  contextLicenseUrl: "https://example.com/.well-known/context-license.json",
+  termsUrl: "https://example.com/ai-terms",
+});
+
+// Run on every route except Next internals.
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+Deploy with `vercel deploy` (or any Next.js host).
+
+## With an RSL 1.0 policy
+
+```ts
+import { crawlertoll } from "@crawlertoll/next";
+
+const ROBOTS_TXT = `
+User-agent: GPTBot
+User-agent: ClaudeBot
+Disallow: /
+Allow: /public
+License: https://example.com/ai-license
+Permits: ai-search, rag
+Prohibits: ai-training
+Compensation: per-crawl 5000 micros USD
+Standard: RSL/1.0
+
+User-agent: *
+Disallow:
+`;
+
+export default crawlertoll({
+  policy: ROBOTS_TXT,
+  offer: {
+    rail: "x402",
+    priceMicros: 5000,
+    currency: "USD",
+    paymentUrl: "https://pay.example.com/abc",
+  },
+});
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+## Reading the decision in Server Components / Route Handlers
+
+The middleware forwards the decision via custom headers. Read them via `headers()`:
+
+```ts
+// app/articles/[id]/page.tsx
+import { headers } from "next/headers";
+
+export default async function Article({ params }: { params: Promise<{ id: string }> }) {
+  const h = await headers();
+  const action = h.get("x-crawlertoll-action");      // "allow" | "402" | "block"
+  const operator = h.get("x-crawlertoll-operator");  // "OpenAI" | "Anthropic" | ...
+  const botName = h.get("x-crawlertoll-bot-name");
+  const verified = h.get("x-crawlertoll-verified");
+
+  if (action === "allow" && operator) {
+    console.log("verified bot reading article", operator, botName);
+  }
+
+  // ... render the article
+}
+```
+
+## Forwarded headers — full reference
+
+| Header | Value |
+|---|---|
+| `x-crawlertoll-action` | `allow` / `402` / `block` |
+| `x-crawlertoll-operator` | `OpenAI` / `Anthropic` / `Google` / `Apple` / `Perplexity` / `Meta` / `ByteDance` / etc, or `""` for unknown |
+| `x-crawlertoll-bot-name` | `GPTBot` / `ChatGPT-User` / `ClaudeBot` / `Claude-User` / `Google-Extended` / `PerplexityBot` / etc, or `""` |
+| `x-crawlertoll-bot-category` | `training` / `inference` / `search` / `agent` / `scraper` / `""` |
+| `x-crawlertoll-verified` | `true` (Web Bot Auth signature valid) / `false` (present but invalid) / `""` (no signature) |
+
+## Vercel template repo
+
+Skip the manual setup — use the [Vercel template](https://github.com/nhrzxxw9dn-web/crawlertoll-vercel-template). One-click "Deploy with Vercel" button gets you a working AI-crawler-aware Next 15 app in two minutes.
+
+## Next steps
+
+- [HTTP 402 standard](/docs/standards/http-402) — what the response shape looks like
+- [Privacy posture](/docs/concepts/privacy) — what the telemetry hook sends, what it doesn't

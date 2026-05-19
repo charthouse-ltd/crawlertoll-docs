@@ -1,0 +1,121 @@
+export const metadata = {
+  title: "Hono",
+  description: "One package, four runtimes: Cloudflare Workers, Bun, Deno, Vercel Edge.",
+};
+
+# Getting started with Hono
+
+The `@crawlertoll/hono` middleware unlocks **four runtime targets from one package**: Cloudflare Workers, Bun, Deno, Vercel Edge — plus Node and the browser.
+
+## Install
+
+```bash
+npm install @crawlertoll/hono @crawlertoll/core hono
+```
+
+## Sixty seconds
+
+```ts
+import { Hono } from "hono";
+import { crawlertoll } from "@crawlertoll/hono";
+
+const app = new Hono();
+
+app.use("*", crawlertoll({
+  offer: { rail: "x402", priceMicros: 5000, currency: "USD" },
+  contextLicenseUrl: "https://example.com/.well-known/context-license.json",
+}));
+
+app.get("/", (c) => c.text("hello"));
+
+export default app;
+```
+
+## Cloudflare Workers
+
+```ts
+// wrangler.toml: name = "my-worker", main = "src/index.ts"
+import { Hono } from "hono";
+import { crawlertoll } from "@crawlertoll/hono";
+
+const app = new Hono();
+app.use("*", crawlertoll({ /* ... */ }));
+app.get("/articles/:id", (c) => c.json({ id: c.req.param("id") }));
+
+export default app;
+```
+
+`wrangler deploy` and you're live. Bundle size: ~37 KB gzipped — well under CF's 1 MiB Worker limit.
+
+## Bun
+
+```ts
+import { Hono } from "hono";
+import { crawlertoll } from "@crawlertoll/hono";
+
+const app = new Hono();
+app.use("*", crawlertoll({ /* ... */ }));
+app.get("/", (c) => c.text("hello"));
+
+Bun.serve({ port: 3000, fetch: app.fetch });
+```
+
+## Deno
+
+```ts
+import { Hono } from "npm:hono";
+import { crawlertoll } from "npm:@crawlertoll/hono";
+
+const app = new Hono();
+app.use("*", crawlertoll({ /* ... */ }));
+app.get("/", (c) => c.text("hello"));
+
+Deno.serve(app.fetch);
+```
+
+## Vercel Edge
+
+```ts
+// app/api/[[...slug]]/route.ts
+import { Hono } from "hono";
+import { handle } from "hono/vercel";
+import { crawlertoll } from "@crawlertoll/hono";
+
+export const runtime = "edge";
+
+const app = new Hono().basePath("/api");
+app.use("*", crawlertoll({ /* ... */ }));
+app.get("/articles/:id", (c) => c.json({ id: c.req.param("id") }));
+
+export const GET = handle(app);
+```
+
+## Per-request decision API
+
+Get typed access to the decision via `c.var.crawlertoll`. Parameterise your Hono app:
+
+```ts
+import { Hono } from "hono";
+import { crawlertoll, type CrawlerTollVariables } from "@crawlertoll/hono";
+
+const app = new Hono<{ Variables: CrawlerTollVariables }>();
+
+app.use("*", crawlertoll({ /* ... */ }));
+
+app.get("/articles/:id", (c) => {
+  const decision = c.var.crawlertoll;
+  if (decision.bot.isBot) {
+    console.log("bot", decision.bot.entry?.name, "→", decision.action);
+  }
+  return c.json({ id: c.req.param("id") });
+});
+```
+
+## Template repo
+
+Don't want to wire this up by hand? Use the [Cloudflare Workers template](https://github.com/nhrzxxw9dn-web/crawlertoll-cloudflare-template) — one-click deploy via the "Deploy to Workers" button.
+
+## Next steps
+
+- [HTTP 402 standard](/docs/standards/http-402) — what the response shape looks like
+- [Settlement rails](/docs/concepts/settlement-rails) — pick a payment rail

@@ -1,0 +1,111 @@
+export const metadata = {
+  title: "Privacy posture",
+  description: "What data CrawlerToll collects, what it doesn't, and how to verify.",
+};
+
+# Privacy posture
+
+CrawlerToll is open source, runs on your infrastructure, and stores no data of its own. The decision engine is a pure function: HTTP request in, structured verdict out. No I/O on the hot path beyond an optional Web Bot Auth JWKS fetch.
+
+The one exception — telemetry — is **opt-in, anonymised, and codifiably minimal**. This page explains exactly what it collects and what it doesn't.
+
+## What the core engine sees
+
+`@crawlertoll/core`'s `decide()`:
+- Reads `request.method`, `request.authority`, `request.targetUri`, `request.path`, `request.headers`
+- Returns a `Decision` struct
+- Performs **zero I/O** unless Web Bot Auth signatures are present, in which case it fetches the bot's JWKS from `https://<authority>/.well-known/http-message-signatures-directory`
+- Caches the JWKS in-process for 1 hour (so subsequent requests from the same bot don't trigger a fetch)
+- **Logs nothing.** Persists nothing. Phones home nowhere.
+
+You can verify this in 60 seconds: the source is at [github.com/nhrzxxw9dn-web/crawlertoll-core-js](https://github.com/nhrzxxw9dn-web/crawlertoll-core-js). The whole package is ~1500 LOC.
+
+## What the framework adapters see
+
+Each adapter (`@crawlertoll/express`, `@crawlertoll/fastify`, `@crawlertoll/hono`, `@crawlertoll/next`, the WP plugin) is a thin shim that translates the framework's request type into `DecideInput` and the verdict back into a framework response. **No additional collection.**
+
+## What the optional telemetry pipeline collects
+
+[`crawlertoll-insights`](https://github.com/nhrzxxw9dn-web/crawlertoll-insights) is the **opt-in** anonymised telemetry pipeline that powers the public dashboard at [crawlertoll.com/insights](https://crawlertoll.com/insights). You wire it in yourself via the `onDecision` hook — it's not enabled by default.
+
+The collector accepts **exactly seven fields**. The Worker enforces this with an allow-list validator that rejects anything else:
+
+| Field | Type | Example | Notes |
+|---|---|---|---|
+| `operator` | string ≤ 64 chars | `"OpenAI"` | Public information about the bot operator |
+| `bot_name` | string ≤ 64 chars | `"GPTBot"` | Public bot identifier |
+| `action` | enum | `"402"` | One of three values |
+| `category` | enum | `"training"` | One of six values |
+| `verified` | string ≤ 8 chars | `"true"` | WBA verification result |
+| `path_segment` | string ≤ 32 chars | `"/articles"` | **First segment only** — clamped |
+| `install_id` | string ≤ 64 chars | `"6f3..."` | Random UUID, generated at install, never correlated |
+
+That's it. The collector code is at [`worker/src/index.ts`](https://github.com/nhrzxxw9dn-web/crawlertoll-insights/blob/main/worker/src/index.ts) — readable in five minutes.
+
+## What the telemetry pipeline EXPLICITLY does not collect
+
+- IP addresses
+- Full User-Agent strings
+- Full URLs (only the first path segment is accepted)
+- Referrer headers
+- Cookies
+- Any other request header
+- Query strings
+- Response bodies
+- Timestamps with sub-day precision (aggregates roll up to daily buckets)
+- Geographic information
+- Site domain (yes — the `install_id` is unbound to any identifying info)
+
+## Aggregation guarantees
+
+A daily Cloudflare Worker cron rolls up raw events into a single aggregate snapshot. Then:
+
+- Buckets with `count < 5` are **suppressed** before the snapshot is published — protects against single-install inference attacks
+- Raw events expire after 35 days (5 days past the 30-day aggregation window)
+- Only the rolled-up aggregate persists
+- The aggregate snapshot is the only thing the public dashboard reads — raw events are never queryable
+
+## How to opt in
+
+Pick your adapter and wire the `onDecision` hook. Sample for Express:
+
+```ts
+import crypto from "node:crypto";
+
+const INSTALL_ID = process.env.CRAWLERTOLL_INSTALL_ID ?? crypto.randomUUID();
+
+app.use(crawlertoll({
+  offer: { rail: "x402", priceMicros: 5000, currency: "USD" },
+  onDecision: (decision, req, _res) => {
+    fetch("https://insights.crawlertoll.com/v1/ingest", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        operator:     decision.bot.entry?.operator ?? "",
+        bot_name:     decision.bot.entry?.name ?? "",
+        action:       decision.action,
+        category:     decision.bot.entry?.category ?? "",
+        verified:     decision.authVerified?.valid === true ? "true"
+                    : decision.authVerified?.valid === false ? "false" : "",
+        path_segment: "/" + (req.path.split("/").filter(Boolean)[0] ?? ""),
+        install_id:   INSTALL_ID,
+      }),
+    }).catch(() => {});       // best-effort, errors swallowed
+  },
+}));
+```
+
+## How to opt out
+
+Don't wire the `onDecision` hook. The default behaviour is **no telemetry**.
+
+## The trade-off
+
+The dashboard exists for one reason: aggregated AI-crawler-traffic data is **the press lever no one else in this space can credibly replicate without first building it**. TollBit, Dark Visitors, and Cloudflare all bootstrapped their early press cycles with charts like these. CrawlerToll has the same ammunition once installs are reporting.
+
+But the value is collective. A single install's data tells you nothing useful. 100 installs tell you the operator-level distribution. 1000 installs surface trends. So the design defaults to opt-in (you decide if you want to contribute) and pays back in published dashboards (everyone benefits from the aggregate).
+
+## See also
+
+- [crawlertoll-insights repo](https://github.com/nhrzxxw9dn-web/crawlertoll-insights) — source for the collector + dashboard
+- [Insights dashboard](https://crawlertoll.com/insights) — the live aggregate view

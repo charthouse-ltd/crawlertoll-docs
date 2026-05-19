@@ -1,0 +1,113 @@
+export const metadata = {
+  title: "RSL 1.0",
+  description: "Really Simple Licensing — the robots.txt vocabulary for AI-licensing terms.",
+};
+
+# RSL 1.0
+
+**RSL — Really Simple Licensing** — is the robots.txt-extension vocabulary for declaring AI-licensing terms. The v1.0 specification was published **2025-12-10** by the RSL Technical Steering Committee. Coalition members include Reddit, Yahoo, People Inc., Medium, Quora, O'Reilly, Ziff Davis, Stack Overflow, Fastly, and Cloudflare.
+
+- **Spec**: [rslstandard.org](https://rslstandard.org/)
+- **Wire format**: XML envelope + robots.txt directives + HTTP headers + RSS feeds + HTML link tags
+- **Includes**: Open License Protocol (OLP — OAuth-2.0 extension) and Crawler Authorization Protocol (CAP)
+
+## What CrawlerToll implements
+
+The v0.1 surface in [`@crawlertoll/core`](https://www.npmjs.com/package/@crawlertoll/core) covers the **robots.txt deployment profile** — the largest-volume deployment vector. The XML envelope ships in v0.2.
+
+The implementation is the **first Node.js parser for RSL 1.0** as of mid-2026.
+
+```ts
+import {
+  parseRobotsTxt,
+  serializeRobotsTxt,
+  matchAgent,
+  matchPath,
+} from "@crawlertoll/core/rsl";
+
+const robotsTxt = `
+User-agent: GPTBot
+Disallow: /
+License: https://example.com/ai-license
+Permits: ai-search, rag
+Prohibits: ai-training, redistribution-without-attribution
+Compensation: per-crawl 5000 micros USD https://example.com/pay
+Standard: RSL/1.0
+`;
+
+const { policy, warnings } = parseRobotsTxt(robotsTxt);
+const group = matchAgent(policy, "GPTBot/1.2");
+const verdict = matchPath(group!, "/articles/1");
+// → { allowed: false, matched: "disallow", pattern: "/" }
+```
+
+## Directives
+
+| Directive | Standard? | What |
+|---|---|---|
+| `User-agent: <name>` | Yes (1994) | Selects which agents the rules apply to |
+| `Disallow: <path>` | Yes (1994) | Block by default |
+| `Allow: <path>` | Yes (RFC 9309) | Open carve-out (longest-match wins) |
+| `Crawl-delay: <n>` | De facto | Seconds between requests |
+| `Sitemap: <url>` | Yes (sitemaps.org) | Sitemap location |
+| `License: <url>` | RSL 1.0 | Human-readable terms |
+| `Permits: <use, use>` | RSL 1.0 | Machine-readable permitted uses |
+| `Prohibits: <use, use>` | RSL 1.0 | Machine-readable prohibited uses |
+| `Compensation: <model> <price> micros <currency> [<url>]` | RSL 1.0 | Triggers 402 on blocked paths |
+| `Standard: RSL/1.0` | RSL 1.0 | Declare which spec version |
+
+## Use vocabulary
+
+RSL uses a shared vocabulary for both `Permits` and `Prohibits`:
+
+- `ai-training` — bulk-corpus training data
+- `ai-search` — search-index style retrieval
+- `ai-inference` — live agent retrieval at inference time
+- `rag` — retrieval-augmented generation
+- `agent-task` — autonomous agent task completion
+- `evaluation` — benchmarks, eval sets
+- `research` — academic / non-commercial research
+- `commercial-use`, `non-commercial-use`
+- `redistribution-with-attribution`, `redistribution-without-attribution`
+- `rebadging` — claiming the content as your own
+- `third-party-resale`
+- `competitive-dataset-creation`
+- `training-without-license`
+
+## Compensation models
+
+- `free` — no payment required
+- `negotiate` — contact for terms
+- `subscription` — flat monthly with no per-call metering
+- `per-crawl <micros> <currency>` — pay per request
+- `per-token <micros> <currency>` — pay per output token
+- `per-document <micros> <currency>` — pay per document retrieved
+
+## Matching precedence
+
+RSL inherits robots.txt matching with the [RFC 9309 (2022)](https://www.rfc-editor.org/rfc/rfc9309.html) clarification: **longest-match wins, Allow ties beat Disallow**. So:
+
+```
+User-agent: GPTBot
+Allow: /articles
+Disallow: /articles
+```
+
+`/articles/123` → **allowed** (tie at length 9, Allow wins).
+
+```
+User-agent: GPTBot
+Allow: /
+Disallow: /private
+```
+
+`/private/x` → **disallowed** (longer Disallow match wins). `/public` → allowed (no Disallow matches).
+
+## Want to be a Supported Implementation?
+
+The RSL Collective maintains a [Supported Implementations](https://rslstandard.org/) page. CrawlerToll is the first Node.js implementation in market.
+
+## See also
+
+- [Decision tree](/docs/concepts/decision-tree) — how `matchAgent` + `matchPath` compose into a 402-or-allow verdict
+- [HTTP 402 standard](/docs/standards/http-402) — what the 402 response looks like when Compensation is declared

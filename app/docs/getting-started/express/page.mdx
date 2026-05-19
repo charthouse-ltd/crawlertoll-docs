@@ -1,0 +1,119 @@
+export const metadata = {
+  title: "Express",
+  description: "Wire CrawlerToll into an Express 4 or 5 app in one line.",
+};
+
+# Getting started with Express
+
+The `@crawlertoll/express` middleware is one line. Drop it into any Express 4 or 5 app.
+
+## Install
+
+```bash
+npm install @crawlertoll/express @crawlertoll/core express
+```
+
+## Sixty seconds
+
+```ts
+import express from "express";
+import { crawlertoll } from "@crawlertoll/express";
+
+const app = express();
+
+app.use(crawlertoll({
+  offer: {
+    rail: "x402",
+    priceMicros: 5000,
+    currency: "USD",
+  },
+  contextLicenseUrl: "https://example.com/.well-known/context-license.json",
+  termsUrl: "https://example.com/ai-terms",
+}));
+
+app.get("/", (req, res) => res.send("hello"));
+app.listen(3000);
+```
+
+That's it. AI crawlers get a 402 with the Cloudflare-shape `Crawler-Price` header and a structured JSON offer. Browsers pass through.
+
+## With an RSL 1.0 policy
+
+```ts
+import { readFileSync } from "node:fs";
+import express from "express";
+import { crawlertoll } from "@crawlertoll/express";
+
+const app = express();
+const robotsTxt = readFileSync("./public/robots.txt", "utf8");
+
+app.use(crawlertoll({
+  policy: robotsTxt,            // parsed once, cached, applied per request
+  offer: {
+    rail: "x402",
+    priceMicros: 5000,
+    currency: "USD",
+    paymentUrl: "https://pay.example.com/abc",
+  },
+}));
+```
+
+Your `robots.txt`:
+
+```
+User-agent: GPTBot
+User-agent: ClaudeBot
+Disallow: /
+Allow: /public
+License: https://example.com/ai-license
+Permits: ai-search, rag
+Prohibits: ai-training
+Compensation: per-crawl 5000 micros USD
+Standard: RSL/1.0
+
+User-agent: *
+Disallow:
+```
+
+Behaviour:
+
+- GPTBot or ClaudeBot hits `/articles` → **402** with the payment offer (Disallow + Compensation = charge)
+- GPTBot hits `/public/anything` → **200** (Allow override)
+- Random browser → **200** (`*` catch-all is Disallow:)
+
+## Reading the decision downstream
+
+The middleware annotates `req.crawlertoll` with the structured decision:
+
+```ts
+app.get("/articles/:id", (req, res, next) => {
+  const decision = req.crawlertoll;
+  if (decision?.bot.isBot) {
+    console.log("bot", decision.bot.entry?.name, "→", decision.action);
+  }
+  next();
+});
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `offer` | `PaymentOffer` | — | Payment offer surfaced when the decision is 402 |
+| `policy` | `RslPolicy \| string` | — | RSL 1.0 policy. Pass parsed `RslPolicy` or raw robots.txt text |
+| `termsUrl` | `string` | — | URL injected as `Link rel="terms-of-service"` |
+| `contextLicenseUrl` | `string` | — | URL injected as `Link rel="describedby"` |
+| `verifyAuth` | `boolean` | `true` | Run Web Bot Auth verification when signature headers are present |
+| `trustVerifiedBots` | `boolean` | `false` | Trust verified bots even when policy would charge them |
+| `onDecision` | `(decision, req, res) => void` | — | Telemetry hook called for every request |
+| `decisionOverride` | `(req) => Decision \| null` | — | Short-circuit the pipeline (e.g. for internal allowlists) |
+
+## Conformance
+
+8 supertest end-to-end tests, all green. See the [GitHub repo](https://github.com/nhrzxxw9dn-web/crawlertoll-express-js) for the full list.
+
+## Next steps
+
+- [Settlement rails](/docs/concepts/settlement-rails) — pick between x402, TollBit, Skyfire, Cloudflare PPC, Stripe ACP
+- [Decision tree](/docs/concepts/decision-tree) — exactly when allow / 402 / block fires
+- [Privacy posture](/docs/concepts/privacy) — opt-in telemetry, what data leaves your machine
