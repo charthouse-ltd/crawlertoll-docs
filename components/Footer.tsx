@@ -40,7 +40,7 @@ export function Footer() {
         </div>
       </div>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8 text-xs text-slate-500 dark:text-slate-500">
-        © {new Date().getFullYear()} Charthouse Ltd. All specs implemented are open standards under their own licenses.
+        © {new Date().getFullYear()} Charthouse Ltd. CrawlerToll™ is a trademark of Charthouse Ltd. All specs implemented are open standards under their own licenses.
       </div>
     </footer>
   );
