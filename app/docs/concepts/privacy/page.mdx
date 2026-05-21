@@ -18,7 +18,7 @@ The one exception — telemetry — is **opt-in, anonymised, and codifiably mini
 - Caches the JWKS in-process for 1 hour (so subsequent requests from the same bot don't trigger a fetch)
 - **Logs nothing.** Persists nothing. Phones home nowhere.
 
-You can verify this in 60 seconds: the source is at [github.com/nhrzxxw9dn-web/crawlertoll-core-js](https://github.com/nhrzxxw9dn-web/crawlertoll-core-js). The whole package is ~1500 LOC.
+You can verify this in 60 seconds: the source is at [github.com/charthouse-ltd/crawlertoll-core-js](https://github.com/charthouse-ltd/crawlertoll-core-js). The whole package is ~1500 LOC.
 
 ## What the framework adapters see
 
@@ -26,7 +26,7 @@ Each adapter (`@crawlertoll/express`, `@crawlertoll/fastify`, `@crawlertoll/hono
 
 ## What the optional telemetry pipeline collects
 
-[`crawlertoll-insights`](https://github.com/nhrzxxw9dn-web/crawlertoll-insights) is the **opt-in** anonymised telemetry pipeline that powers the public dashboard at [crawlertoll.com/insights](https://crawlertoll.com/insights). You wire it in yourself via the `onDecision` hook — it's not enabled by default.
+[`crawlertoll-insights`](https://github.com/charthouse-ltd/crawlertoll-insights) is the **opt-in** anonymised telemetry pipeline that powers the public dashboard at [crawlertoll.com/insights](https://crawlertoll.com/insights). You wire it in yourself via the `onDecision` hook — it's not enabled by default.
 
 The collector accepts **exactly seven fields**. The Worker enforces this with an allow-list validator that rejects anything else:
 
@@ -40,7 +40,7 @@ The collector accepts **exactly seven fields**. The Worker enforces this with an
 | `path_segment` | string ≤ 32 chars | `"/articles"` | **First segment only** — clamped |
 | `install_id` | string ≤ 64 chars | `"6f3..."` | Random UUID, generated at install, never correlated |
 
-That's it. The collector code is at [`worker/src/index.ts`](https://github.com/nhrzxxw9dn-web/crawlertoll-insights/blob/main/worker/src/index.ts) — readable in five minutes.
+That's it. The collector code is at [`worker/src/index.ts`](https://github.com/charthouse-ltd/crawlertoll-insights/blob/main/worker/src/index.ts) — readable in five minutes.
 
 ## What the telemetry pipeline EXPLICITLY does not collect
 
@@ -107,5 +107,5 @@ But the value is collective. A single install's data tells you nothing useful. 1
 
 ## See also
 
-- [crawlertoll-insights repo](https://github.com/nhrzxxw9dn-web/crawlertoll-insights) — source for the collector + dashboard
+- [crawlertoll-insights repo](https://github.com/charthouse-ltd/crawlertoll-insights) — source for the collector + dashboard
 - [Insights dashboard](https://crawlertoll.com/insights) — the live aggregate view

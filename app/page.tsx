@@ -38,7 +38,7 @@ export default function HomePage() {
                 Read the docs
               </Link>
               <a
-                href="https://github.com/nhrzxxw9dn-web"
+                href="https://github.com/charthouse-ltd"
                 target="_blank"
                 rel="noopener"
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 px-5 py-3 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-900 transition"
@@ -90,7 +90,7 @@ export default function HomePage() {
               name="x402"
               ratifyingBody="x402 Foundation (Linux Foundation)"
               date="Apr 2026"
-              description="Coinbase + LF agent-payment rail. Founding coalition: AWS, Anthropic, Circle, Cloudflare, Google, Microsoft, Stripe, Visa, Mastercard, NEAR, Chainlink."
+              description="Coinbase + LF agent-payment rail. Founding members include Coinbase, Google, Microsoft, AWS, Stripe, Visa, Mastercard, American Express, Cloudflare, Circle."
               href="/docs/standards/x402"
               external="https://x402.org"
             />
@@ -204,7 +204,7 @@ wp plugin install crawlertoll --activate`,
               tagline="Framework-agnostic. Bot catalogue, Web Bot Auth, HTTP 402, RSL 1.0 parser."
               runtime="Node 20+"
               npm="https://www.npmjs.com/package/@crawlertoll/core"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-core-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-core-js"
               href="/docs"
             />
             <AdapterCard
@@ -212,7 +212,7 @@ wp plugin install crawlertoll --activate`,
               tagline="One-line Express middleware. Express 4 + 5."
               runtime="Express 4+5"
               npm="https://www.npmjs.com/package/@crawlertoll/express"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-express-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-express-js"
               href="/docs/getting-started/express"
             />
             <AdapterCard
@@ -220,7 +220,7 @@ wp plugin install crawlertoll --activate`,
               tagline="Idiomatic Fastify plugin. Decorates request.crawlertoll. Fastify 4 + 5."
               runtime="Fastify 4+5"
               npm="https://www.npmjs.com/package/@crawlertoll/fastify"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-fastify-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-fastify-js"
               href="/docs/getting-started/fastify"
             />
             <AdapterCard
@@ -228,7 +228,7 @@ wp plugin install crawlertoll --activate`,
               tagline="One package, four runtimes: Cloudflare Workers, Bun, Deno, Vercel Edge."
               runtime="Multi-runtime"
               npm="https://www.npmjs.com/package/@crawlertoll/hono"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-hono-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-hono-js"
               href="/docs/getting-started/hono"
             />
             <AdapterCard
@@ -236,7 +236,7 @@ wp plugin install crawlertoll --activate`,
               tagline="Drop into middleware.ts. Edge runtime. Next 14 + 15."
               runtime="Next 14+15"
               npm="https://www.npmjs.com/package/@crawlertoll/next"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-next-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-next-js"
               href="/docs/getting-started/next"
             />
             <AdapterCard
@@ -244,28 +244,28 @@ wp plugin install crawlertoll --activate`,
               tagline="Settlement-rail adapter for x402. Quote builder, header parser, facilitator verify."
               runtime="LF x402"
               npm="https://www.npmjs.com/package/@crawlertoll/x402"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-x402-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-x402-js"
             />
             <AdapterCard
               name="@crawlertoll/publisher"
               tagline="Publisher SDK + CLI. npx crawlertoll init scaffolds context-license.json in 60s."
               runtime="CLI + SDK"
               npm="https://www.npmjs.com/package/@crawlertoll/publisher"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-publisher-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-publisher-js"
             />
             <AdapterCard
               name="@crawlertoll/parser"
               tagline="JSON Schema validator + TypeScript types for context-license.json."
               runtime="Validator"
               npm="https://www.npmjs.com/package/@crawlertoll/parser"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-parser-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-parser-js"
             />
             <AdapterCard
               name="@crawlertoll/client"
               tagline="Buyer SDK. Discover publishers, query MCP endpoints, verify attestation."
               runtime="Buyer SDK"
               npm="https://www.npmjs.com/package/@crawlertoll/client"
-              github="https://github.com/nhrzxxw9dn-web/crawlertoll-sdk-js"
+              github="https://github.com/charthouse-ltd/crawlertoll-sdk-js"
             />
           </div>
         </div>
@@ -289,7 +289,7 @@ wp plugin install crawlertoll --activate`,
                 Hono + @crawlertoll/hono. No CF Enterprise required. <code className="font-mono text-xs">wrangler deploy</code> and you&apos;re live.
               </p>
               <a
-                href="https://deploy.workers.cloudflare.com/?url=https://github.com/nhrzxxw9dn-web/crawlertoll-cloudflare-template"
+                href="https://deploy.workers.cloudflare.com/?url=https://github.com/charthouse-ltd/crawlertoll-cloudflare-template"
                 target="_blank"
                 rel="noopener"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
@@ -303,7 +303,7 @@ wp plugin install crawlertoll --activate`,
                 Next.js 15 + @crawlertoll/next. One click to clone-and-deploy to <code className="font-mono text-xs">vercel.app</code>.
               </p>
               <a
-                href="https://vercel.com/new/clone?repository-url=https://github.com/nhrzxxw9dn-web/crawlertoll-vercel-template"
+                href="https://vercel.com/new/clone?repository-url=https://github.com/charthouse-ltd/crawlertoll-vercel-template"
                 target="_blank"
                 rel="noopener"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
@@ -317,7 +317,7 @@ wp plugin install crawlertoll --activate`,
                 30+ AI crawler catalogue, RSL 1.0 robots.txt, settings page. PHP 7.4+. wp.org-submission-ready.
               </p>
               <a
-                href="https://github.com/nhrzxxw9dn-web/crawlertoll-wp"
+                href="https://github.com/charthouse-ltd/crawlertoll-wp"
                 target="_blank"
                 rel="noopener"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
@@ -383,7 +383,7 @@ wp plugin install crawlertoll --activate`,
             Built once, runs everywhere.
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto mb-8">
-            Eight published npm packages, four deploy templates, ~140 vitest tests, all Apache 2.0. Adoptable by any publisher, audited by anyone, controlled by no single vendor.
+            Nine npm packages, four deploy templates, ~140 vitest tests, all Apache 2.0. Adoptable by any publisher, audited by anyone, controlled by no single vendor.
           </p>
           <Link
             href="/docs/getting-started/express"

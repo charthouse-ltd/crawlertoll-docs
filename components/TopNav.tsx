@@ -12,7 +12,7 @@ export function TopNav() {
           <Link href="/docs" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">Docs</Link>
           <Link href="/docs/standards" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">Standards</Link>
           <Link href="/docs/getting-started/express" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">Get started</Link>
-          <a href="https://github.com/nhrzxxw9dn-web" target="_blank" rel="noopener" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
+          <a href="https://github.com/charthouse-ltd" target="_blank" rel="noopener" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
             GitHub
           </a>
         </nav>

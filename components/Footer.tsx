@@ -9,8 +9,8 @@ export function Footer() {
           <ul className="space-y-2 text-slate-600 dark:text-slate-400">
             <li><Link href="/docs">Documentation</Link></li>
             <li><Link href="/docs/standards">Standards</Link></li>
-            <li><a href="https://github.com/nhrzxxw9dn-web/crawlertoll/blob/main/MANIFESTO.md">Manifesto</a></li>
-            <li><a href="https://github.com/nhrzxxw9dn-web">GitHub</a></li>
+            <li><a href="https://github.com/charthouse-ltd/crawlertoll/blob/main/MANIFESTO.md">Manifesto</a></li>
+            <li><a href="https://github.com/charthouse-ltd">GitHub</a></li>
           </ul>
         </div>
         <div>
