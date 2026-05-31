@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "WordPress",
-  description: "Install the WordPress plugin. 30+ AI crawlers, RSL 1.0 policy, HTTP 402.",
+  title: "WordPress Plugin — Make AI Crawlers Pay | CrawlerToll",
+  description: "Install the CrawlerToll WordPress plugin to detect 30+ AI crawlers (GPTBot, ClaudeBot, PerplexityBot), apply RSL 1.0 policy, and issue HTTP 402 Payment Required. Works with Cloudflare, TollBit, Skyfire, x402. Free & open source.",
 };
 
 # Getting started with WordPress
@@ -82,3 +82,16 @@ Web Bot Auth verification is intentionally omitted from the WP plugin v0.1. PHP 
 
 - [Decision tree](/docs/concepts/decision-tree) — when allow / 402 / block fires
 - [Settlement rails](/docs/concepts/settlement-rails) — pick a payment rail
+- [Node adapters](/docs/getting-started/express) — Express, Fastify, Hono, Next.js
+
+## Pro features (coming soon)
+
+CrawlerToll Pro adds advanced tooling for publishers who want more than detection:
+
+- **Revenue dashboard** — how much money you could be earning from AI crawlers, per bot, per day
+- **Bot-request logs** — full crawl history, searchable and exportable (stored in a dedicated database table, not wp_options)
+- **Email alerts** — daily/weekly summaries of crawler activity with revenue estimates
+- **Per-path pricing** — charge different rates for different content sections
+- **Content provenance** — SHA-256 hashes of served content, creating an irrefutable timestamped record of what was crawled and when
+
+[Subscribe for updates →](https://crawlertoll.com#subscribe)

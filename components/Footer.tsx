@@ -8,6 +8,7 @@ export function Footer() {
           <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Project</h3>
           <ul className="space-y-2 text-slate-600 dark:text-slate-400">
             <li><Link href="/docs">Documentation</Link></li>
+            <li><Link href="/docs/getting-started/wordpress">WordPress Plugin</Link></li>
             <li><Link href="/docs/standards">Standards</Link></li>
             <li><a href="https://github.com/charthouse-ltd/crawlertoll/blob/main/MANIFESTO.md">Manifesto</a></li>
             <li><a href="https://github.com/charthouse-ltd">GitHub</a></li>
@@ -16,6 +17,7 @@ export function Footer() {
         <div>
           <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Adapters</h3>
           <ul className="space-y-2 text-slate-600 dark:text-slate-400">
+            <li><Link href="/docs/getting-started/wordpress">WordPress</Link></li>
             <li><a href="https://www.npmjs.com/package/@crawlertoll/express">Express</a></li>
             <li><a href="https://www.npmjs.com/package/@crawlertoll/fastify">Fastify</a></li>
             <li><a href="https://www.npmjs.com/package/@crawlertoll/hono">Hono</a></li>

@@ -10,6 +10,7 @@ export function TopNav() {
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">
           <Link href="/docs" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">Docs</Link>
+          <Link href="/docs/getting-started/wordpress" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">WordPress</Link>
           <Link href="/docs/standards" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">Standards</Link>
           <Link href="/docs/getting-started/express" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">Get started</Link>
           <a href="https://github.com/charthouse-ltd" target="_blank" rel="noopener" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">

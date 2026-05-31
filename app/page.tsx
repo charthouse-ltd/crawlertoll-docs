@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AdapterCard } from "@/components/AdapterCard";
@@ -5,6 +6,13 @@ import { CodeTabs } from "@/components/CodeTabs";
 import { Footer } from "@/components/Footer";
 import { StandardCard } from "@/components/StandardCard";
 import { TopNav } from "@/components/TopNav";
+
+export const metadata: Metadata = {
+  title: "CrawlerToll — Make AI Crawlers Pay. WordPress Plugin + Node Middleware for HTTP 402 & RSL 1.0",
+  description:
+    "Detect 30+ AI crawlers (GPTBot, ClaudeBot, PerplexityBot), apply RSL 1.0 policy, and issue HTTP 402 Payment Required. WordPress plugin + Express, Fastify, Hono, Next.js adapters. Vendor-neutral — works with Cloudflare, TollBit, x402, Stripe. Free & open source.",
+  alternates: { canonical: "https://crawlertoll.com" },
+};
 
 export default function HomePage() {
   return (
@@ -16,20 +24,29 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
           <div className="max-w-4xl">
             <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4 tracking-wide uppercase">
-              Open-source &middot; Apache 2.0 &middot; Vendor-neutral
+              WordPress Plugin &middot; Node Middleware &middot; Apache 2.0 &middot; Vendor-neutral
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6 leading-[1.1]">
-              The neutral middleware for the AI-crawler economy.
+              Make AI crawlers pay for your content.
             </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-8">
-              Detect AI crawlers. Verify Web Bot Auth signatures. Apply RSL 1.0 policy. Issue HTTP 402 with a structured payment offer. All in vendor-neutral code you can audit — one package, every Node framework, every edge runtime.
+            <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-4">
+              CrawlerToll detects 30+ AI bots — GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more — applies your RSL 1.0 policy, and issues HTTP 402 Payment Required with a structured payment offer. One plugin for WordPress. One npm install for Node.
+            </p>
+            <p className="text-md text-slate-500 dark:text-slate-500 leading-relaxed max-w-3xl mb-8">
+              Works with Cloudflare Pay Per Crawl, TollBit, Skyfire, x402, and Stripe ACP. You choose the settlement rail. We handle the detection and enforcement.
             </p>
             <div className="flex flex-wrap gap-3">
+              <Link
+                href="/docs/getting-started/wordpress"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-5 py-3 text-sm font-medium hover:bg-blue-700 transition"
+              >
+                WordPress Plugin →
+              </Link>
               <Link
                 href="/docs/getting-started/express"
                 className="inline-flex items-center gap-2 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 py-3 text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition"
               >
-                Get started in 60 seconds →
+                Node.js: Get started →
               </Link>
               <Link
                 href="/docs"
