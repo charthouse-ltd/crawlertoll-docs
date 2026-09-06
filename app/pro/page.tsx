@@ -123,7 +123,7 @@ export default function ProPage() {
             <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4 tracking-wide uppercase">
               CrawlerToll Pro for WordPress &middot; 14-day free trial
             </p>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6 leading-[1.1]">
+            <h1 className="font-display text-5xl sm:text-6xl font-semibold text-slate-900 dark:text-slate-100 mb-6 leading-[1.05] rise">
               The paywall where the content itself is the lock.
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-8">

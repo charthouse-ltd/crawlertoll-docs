@@ -4,8 +4,8 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          <span className="inline-block h-6 w-6 rounded bg-gradient-to-br from-blue-600 to-pink-600" aria-hidden />
+        <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          <span className="inline-block h-5 w-5 rounded-full" style={{ background: "radial-gradient(circle at 35% 30%, #e05a3f, #c2381f 55%, #8e2613)", boxShadow: "inset 0 0 0 2px rgba(255,255,255,.35)" }} aria-hidden />
           CrawlerToll
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">

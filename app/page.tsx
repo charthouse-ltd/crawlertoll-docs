@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AdapterCard } from "@/components/AdapterCard";
+import { SealedArticle } from "@/components/SealedArticle";
 import { CodeTabs } from "@/components/CodeTabs";
 import { Footer } from "@/components/Footer";
 import { StandardCard } from "@/components/StandardCard";
@@ -21,12 +22,12 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="border-b border-slate-200 dark:border-slate-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
-          <div className="max-w-4xl">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28 grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+          <div className="max-w-4xl rise">
             <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4 tracking-wide uppercase">
               WordPress Plugin &middot; Node Middleware &middot; Apache 2.0 &middot; Vendor-neutral
             </p>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6 leading-[1.1]">
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-semibold text-slate-900 dark:text-slate-100 mb-6 leading-[1.02]">
               Encrypt your content.
             </h1>
             <p className="text-2xl text-slate-700 dark:text-slate-300 font-medium leading-snug max-w-3xl mb-4">
@@ -70,6 +71,7 @@ export default function HomePage() {
               </a>
             </div>
           </div>
+          <SealedArticle />
         </div>
       </section>
 

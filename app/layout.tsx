@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import { Fraunces, Instrument_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 
 import "./globals.css";
+
+// Sealed system (redesign 2026-09-06): a characterful editorial serif for
+// display, a crisp grotesk for body. Self-hosted by next/font — no request to
+// Google at runtime (EU privacy), no layout shift.
+const display = Fraunces({ subsets: ["latin"], axes: ["opsz", "SOFT"], variable: "--font-display", display: "swap" });
+const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://crawlertoll.com"),
@@ -47,7 +54,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`h-full ${display.variable} ${sans.variable}`}>
       <head>
         <script
           type="application/ld+json"
