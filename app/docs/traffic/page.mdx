@@ -1,0 +1,27 @@
+export const metadata = {
+  title: "Traffic — who is at the door — CrawlerToll",
+  description: "How CrawlerToll classifies every front-end request (people, declared AI crawlers, search engines, undeclared automation), the sealed-content funnel, and why sealing is the answer to the traffic no user-agent paywall can bill.",
+};
+
+# Traffic — who is at the door
+
+Every front-end request to a CrawlerToll site is classified into one of four kinds and counted per day. The plugin keeps a rolling 60-day window in a single WordPress option — no database table, no external analytics, no IP addresses stored.
+
+| Kind | What it means | What happens on a sealed post |
+|---|---|---|
+| **People (browsers)** | A real browser string with an engine token. A headless browser wearing a real string lands here too — classification is by user agent and says so. | The preview and the wall. |
+| **Declared AI crawlers** | One of the 30 user-agents in the catalogue. | Charged or blocked by your RSL policy; a signed 402 offer. |
+| **Search engines** | Googlebot, Bingbot and the rest of the safe list. Never charged. | The preview, with paywall structured data so the page is indexed correctly. |
+| **Undeclared automation** | curl, python-requests, Go/Java clients, headless Chrome, generic "bot"/"spider" strings, empty user agents. | The preview and the **encrypted body**. This is the traffic a user-agent paywall cannot bill — and the reason the content itself is the lock. |
+
+## The sealed funnel
+
+The unlock app reports three moments back to the site: a wall was shown, a wall was unavailable (the unlock service could not be reached — nothing was charged), and an unlock happened, with the rail: card, USDC, free metered read, email link, pass renewal, or a returning device. Together with sealed-page views that gives you views → walls → unlocks, per day, with rates.
+
+Free installs see the last seven days on the Settings page. Pro shows 30 days, the split by rail and the most frequent undeclared user agents on the Revenue tab, next to [realised revenue](/docs/unlock-service).
+
+## Honest limits
+
+- Classification is by user agent. It cannot see intent, and it cannot tell a careful headless browser from a person. That is not a gap to be fixed with more heuristics; it is why sealing exists.
+- Counters are best-effort. Under heavy concurrent load a race can undercount by one. Nothing here is billing — receipts are.
+- No IP addresses are stored. The metered-articles feature keeps a salted, daily-rotating hash for its abuse ceiling; the traffic view keeps only user-agent strings, truncated.

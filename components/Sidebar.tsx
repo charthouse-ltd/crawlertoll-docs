@@ -46,6 +46,7 @@ const NAV: NavSection[] = [
       { label: "Settlement rails", href: "/docs/concepts/settlement-rails" },
       { label: "Unlock service", href: "/docs/unlock-service" },
       { label: "Refunds and disputes", href: "/docs/refunds" },
+      { label: "Traffic — who is at the door", href: "/docs/traffic" },
       { label: "Privacy posture", href: "/docs/concepts/privacy" },
     ],
   },

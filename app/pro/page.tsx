@@ -40,7 +40,7 @@ const FREE = [
   "The sealed paywall: the post body is encrypted on the page; the key releases only against a settled payment",
   "Cards, Apple Pay and Google Pay on your own Stripe account",
   "USDC over x402 straight to your own wallet — the rail AI agents pay on",
-  "Visual paywall cut in the editor, recent-unlock receipts",
+  "Visual paywall cut in the editor, receipts with refund links, QR transfer of an unlock to another device",
 ];
 
 const FEATURES = [
@@ -61,8 +61,8 @@ const FEATURES = [
     body: "/premium/* at one price, /blog/ at another, with wildcards and longest-prefix wins. Route individual crawlers to a different rail when you need to.",
   },
   {
-    title: "Revenue dashboard, logs, alerts",
-    body: "Every priced 402 and every unlock recorded: which bots, which paths, what price, trend over time. Filterable decision logs with CSV/JSON export, retention you control, and daily or weekly email summaries.",
+    title: "Realised revenue, traffic, logs, alerts",
+    body: "What was actually collected, by rail, next to what was priced. Who is at the door — people, declared AI crawlers, search engines, undeclared automation — and the sealed funnel from views to walls to unlocks. Decision logs with export, retention you control, daily or weekly summaries.",
   },
   {
     title: "Unlock webhooks",

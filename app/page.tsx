@@ -27,10 +27,13 @@ export default function HomePage() {
               WordPress Plugin &middot; Node Middleware &middot; Apache 2.0 &middot; Vendor-neutral
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6 leading-[1.1]">
-              The paywall where the content itself is the lock.
+              Encrypt your content.
             </h1>
             <p className="text-2xl text-slate-700 dark:text-slate-300 font-medium leading-snug max-w-3xl mb-4">
-              One paywall for humans and bots. Encrypted, tagged, paid straight to you.
+              The paywall where the content itself is the lock — one paywall for humans and bots. Encrypted, tagged, paid straight to you.
+            </p>
+            <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-4">
+              Robots.txt is a request. A user-agent check is a guess. Caches leak, feeds leak, and every scraper can wear a browser&apos;s name. The only monetisation that survives all of that is content that is not there in the clear until someone has paid you. That is what CrawlerToll ships — and the market is moving there whether publishers adapt or not.
             </p>
             <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-4">
               CrawlerToll recognises 30 declared AI-crawler user-agents — GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more — applies your RSL 1.0 policy, and issues HTTP 402 Payment Required with a structured payment offer. On WordPress it also seals premium content: the body is encrypted on the page and only unlocks against a payment made directly to you.
@@ -105,7 +108,7 @@ export default function HomePage() {
             ))}
           </div>
           <p className="mt-8 text-sm text-slate-500 dark:text-slate-500">
-            Free on wp.org with both payment rails. <Link href="/pro" className="text-blue-600 dark:text-blue-400 hover:underline">Pro</Link> adds access tiers, bundles, metered free articles, email-gated access, webhooks and the revenue dashboard.
+            Free on wp.org with both payment rails, a traffic view of who is really at the door, a realised-revenue ledger and a refund workflow that never touches your money. <Link href="/pro" className="text-blue-600 dark:text-blue-400 hover:underline">Pro</Link> adds access tiers, bundles, metered free articles, email-gated access, webhooks and the full dashboard. Readers can carry an unlock to another device with a QR code.
           </p>
         </div>
       </section>
