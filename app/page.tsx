@@ -10,7 +10,7 @@ import { TopNav } from "@/components/TopNav";
 export const metadata: Metadata = {
   title: "CrawlerToll — Make AI Crawlers Pay. WordPress Plugin + Node Middleware for HTTP 402 & RSL 1.0",
   description:
-    "Detect 30+ AI crawlers (GPTBot, ClaudeBot, PerplexityBot), apply RSL 1.0 policy, and issue HTTP 402 Payment Required. WordPress plugin + Express, Fastify, Hono, Next.js adapters. Vendor-neutral — works with Cloudflare, TollBit, x402, Stripe. Free & open source.",
+    "The paywall where the content itself is the lock. Recognises 30 declared AI-crawler user-agents, applies RSL 1.0 policy, issues HTTP 402, and seals premium content — paid by card on your own Stripe account or in USDC to your own wallet. WordPress plugin + Express, Fastify, Hono, Next.js adapters. Free & open source.",
   alternates: { canonical: "https://crawlertoll.com" },
 };
 
@@ -30,10 +30,10 @@ export default function HomePage() {
               Make AI crawlers pay for your content.
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-4">
-              CrawlerToll detects 30+ AI bots — GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more — applies your RSL 1.0 policy, and issues HTTP 402 Payment Required with a structured payment offer. One plugin for WordPress. One npm install for Node.
+              CrawlerToll recognises 30 declared AI-crawler user-agents — GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more — applies your RSL 1.0 policy, and issues HTTP 402 Payment Required with a structured payment offer. On WordPress it also seals premium content: the body is encrypted on the page and only unlocks against a payment made directly to you.
             </p>
             <p className="text-md text-slate-500 dark:text-slate-500 leading-relaxed max-w-3xl mb-8">
-              Works with Cloudflare Pay Per Crawl, TollBit, Skyfire, x402, and Stripe ACP. You choose the settlement rail. We handle the detection and enforcement.
+              Readers pay by card on your own Stripe account; AI agents pay in USDC over x402 to your own wallet. CrawlerToll never touches the money and takes no cut.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -331,7 +331,7 @@ wp plugin install crawlertoll --activate`,
             <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5">
               <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">WordPress plugin</h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                30+ AI crawler catalogue, RSL 1.0 robots.txt, settings page. PHP 7.4+. wp.org-submission-ready.
+                30-crawler catalogue, RSL 1.0 robots.txt, sealed paywall with card + USDC rails, Pro revenue tooling. PHP 7.4+.
               </p>
               <a
                 href="https://github.com/charthouse-ltd/crawlertoll-wp"
@@ -369,7 +369,7 @@ wp plugin install crawlertoll --activate`,
                 Vendor-neutral by design.
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                CrawlerToll does not try to be a marketplace, a payment processor, or a metadata-vocabulary author. It is the vendor-neutral implementation that sits underneath — and ships adapters TO Cloudflare Pay Per Crawl, TollBit, Skyfire, x402, and Stripe ACP.
+                CrawlerToll does not try to be a marketplace, a payment processor, or a metadata-vocabulary author. It is the vendor-neutral implementation that sits underneath — HTTP 402, RSL 1.0 and x402 — and it coexists with Cloudflare Pay Per Crawl at the edge and with any hosted paywall network you already use.
               </p>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                 Apache-2.0 OSS. Pick whatever settlement rail your business already uses. Audit every line. Fork freely.

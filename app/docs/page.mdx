@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Documentation — CrawlerToll WordPress Plugin & Node Middleware",
-  description: "Complete documentation for CrawlerToll: detect AI crawlers, apply RSL 1.0 policy, issue HTTP 402. WordPress plugin guide, Express/Fastify/Hono/Next.js adapter docs, standards reference, and decision engine API.",
+  description: "Complete documentation for CrawlerToll: recognise declared AI crawlers, apply RSL 1.0 policy, issue HTTP 402, seal premium content. WordPress plugin guide, Express/Fastify/Hono/Next.js adapter docs, standards reference, and decision engine API.",
 };
 
 # Overview
@@ -11,16 +11,16 @@ CrawlerToll is **open-source Node middleware for the AI-crawler economy**. It im
 
 On every incoming request, the middleware:
 
-1. **Detects** AI crawlers via a curated catalogue of 30+ operators (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, Meta-ExternalAgent, Bytespider, CCBot, Cohere, Mistral, etc.).
+1. **Recognises** declared AI crawlers via a curated catalogue of 30 user-agents (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, Meta-ExternalAgent, Bytespider, CCBot, Cohere, Mistral, etc.).
 2. **Verifies** cryptographic identity if the request carries Web Bot Auth signatures (Ed25519 + RFC 9421 HTTP Message Signatures per IETF `draft-meunier-web-bot-auth-architecture-05`).
 3. **Applies** your RSL 1.0 robots.txt policy.
 4. **Issues** HTTP 402 with Cloudflare-shape `Crawler-Price` / `Crawler-Price-Rail` / `Link` headers + a structured JSON payment offer when policy says so. Or 403 (block). Or 200 (allow) — with the decision forwarded to your route handlers via headers.
 
 ## What it doesn't do
 
-- **Settle payments.** It emits the 402 with a payment offer. Actual settlement happens on whichever rail you chose — [x402](/docs/standards/x402), TollBit, Skyfire, Cloudflare Pay Per Crawl, or Stripe ACP. Adapter packages are separate.
+- **Hold your money.** The Node middleware emits the 402 with a payment offer; the WordPress plugin goes further and seals content that unlocks against a payment made directly to you — by card on your own Stripe account or in USDC to your own wallet. See [settlement rails](/docs/concepts/settlement-rails) and the [unlock service](/docs/unlock-service).
 - **Replace a CDN.** It runs at the application layer. Cloudflare / Akamai / Fastly handle edge-level concerns; CrawlerToll handles fine-grained policy where edge rules don't reach.
-- **Block scrapers that ignore robots.txt.** Headless-browser scraping requires edge-level enforcement no application middleware can provide. CrawlerToll detects identified crawlers and applies policy; CF Bot Management or similar handles the rest.
+- **Identify scrapers that hide.** User-agent recognition only covers crawlers that declare themselves. On WordPress, sealing is the answer for premium content — an unidentified scraper gets the encrypted body; edge tools such as Cloudflare Bot Management handle the rest of a site.
 
 ## Where to start
 
@@ -30,7 +30,7 @@ Pick your framework — wiring is one line in all of them:
 - [Fastify](/docs/getting-started/fastify) (Node, Fastify 4 + 5)
 - [Hono](/docs/getting-started/hono) (Cloudflare Workers, Bun, Deno, Vercel Edge, Node)
 - [Next.js](/docs/getting-started/next) (App Router middleware, Edge runtime)
-- [WordPress](/docs/getting-started/wordpress) (PHP plugin, 30+ AI crawler catalogue)
+- [WordPress](/docs/getting-started/wordpress) (PHP plugin, sealed paywall, 30-crawler catalogue)
 
 Or use the framework-agnostic [`@crawlertoll/core`](https://www.npmjs.com/package/@crawlertoll/core) `decide()` function directly.
 
@@ -40,7 +40,7 @@ Or use the framework-agnostic [`@crawlertoll/core`](https://www.npmjs.com/packag
 |---|---|
 | Decision engine | `@crawlertoll/core` — bot detection + Web Bot Auth + RSL 1.0 + HTTP 402 |
 | Framework adapters | `@crawlertoll/express`, `@crawlertoll/fastify`, `@crawlertoll/hono`, `@crawlertoll/next` |
-| Settlement rails | `@crawlertoll/x402` (more coming) |
+| Settlement rails | `@crawlertoll/x402`; on WordPress, x402 + the publisher's own Stripe account |
 | Publisher tooling | `@crawlertoll/publisher` — CLI + SDK for context-license.json |
 | Buyer tooling | `@crawlertoll/client` — discover, query, verify attestation |
 | Validators | `@crawlertoll/parser` — context-license.json schema validator |

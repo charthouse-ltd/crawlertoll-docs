@@ -1,6 +1,6 @@
 export const metadata = {
   title: "WordPress Plugin — Make AI Crawlers Pay | CrawlerToll",
-  description: "Install the CrawlerToll WordPress plugin to detect 30+ AI crawlers (GPTBot, ClaudeBot, PerplexityBot), apply RSL 1.0 policy, and issue HTTP 402 Payment Required. Works with Cloudflare, TollBit, Skyfire, x402. Free & open source.",
+  description: "Install the CrawlerToll WordPress plugin: recognise 30 declared AI crawlers, apply RSL 1.0 policy, issue HTTP 402, and seal premium posts that unlock by card on your own Stripe account or in USDC to your own wallet. Free & open source.",
 };
 
 # Getting started with WordPress
@@ -44,17 +44,30 @@ curl -sI -H 'user-agent: GPTBot/1.2' https://your-site.example/
 
 ## Customising
 
-Settings → CrawlerToll. Five fields:
+Settings → CrawlerToll:
 
 | Field | Default | Description |
 |---|---|---|
 | Enabled | on | Turn enforcement on/off without uninstalling |
-| Price (micros) | 5000 | 5000 = $0.005 per crawl |
+| Price (micros) | 5000 | 5000 = $0.005 per crawl. Also the single reader price for sealed posts unless tiers are set (Pro) |
 | Currency | USD | USD / USDC / EUR / GBP |
-| Rail | x402 | x402 / tollbit / skyfire / cloudflare-ppc / stripe-acp / custom |
-| Payment URL | (empty) | Settlement-rail-specific paywall URL |
+| Rail | x402 | `x402` (USDC, agents + wallets) / `stripe-acp` (cards on your Stripe) / `custom` (your own payment URL) |
+| USDC payout address | (empty) | Your wallet on Base. Required to sell to agents; leave empty to disable the USDC rail |
+| Stripe publishable + secret key | (empty) | Your own Stripe keys. A restricted key (`rk_…`) with PaymentIntents access is recommended; the secret is stored write-only |
+| Apple Pay verification | (empty) | Paste Stripe's domain-association file; served at `/.well-known/apple-developer-merchantid-domain-association` |
+| Payment URL | (empty) | For the `custom` rail: your hosted paywall |
 | Terms-of-use URL | (empty) | Surfaced as `Link rel="terms-of-service"` |
 | RSL 1.0 policy | (default) | Raw RSL 1.0 robots.txt directives |
+
+## Selling to readers: the sealed paywall
+
+Mark a post **Premium** in the editor sidebar and place the paywall cut — drag the bar between blocks, or click "Place paywall cut at cursor" to end the preview mid-sentence. On the first anonymous view the plugin splits the post, encrypts the body with AES-256-GCM, escrows the key with the [unlock service](/docs/unlock-service), and serves the preview plus the encrypted body. Excerpts, feeds, oEmbed and the REST API only ever see the preview; paywall structured data (`isAccessibleForFree: false` + `hasPart`) tells search engines what is going on.
+
+Readers see a wall with one tile per rail: **pay by card** (Stripe Payment Element, with Apple Pay / Google Pay where available) and **pay with USDC** (any EIP-1193 wallet; the app switches to Base for them). AI agents get the same offer as a signed HTTP 402 with x402 V2 headers. After payment the browser decrypts in place, caches the key on the device, and holds a settlement pass so access survives a cleared cache.
+
+Stripe's card floor is $0.50: a per-crawl price of a fraction of a cent is agent-only, so set reader prices with Pro **access tiers** ($3–10 passes work well) or raise the single price.
+
+If the unlock service cannot be reached, the wall shows an "unavailable" card and no payment can be started — money is never taken for a key that cannot be released.
 
 ## How it integrates with WordPress
 
@@ -69,7 +82,7 @@ Settings → CrawlerToll. Five fields:
 
 ## Compatibility
 
-- **WP Super Cache / W3 Total Cache / WP Rocket**: works. The plugin returns 402 *before* the cache layer runs.
+- **WP Super Cache / W3 Total Cache / WP Rocket**: works. The plugin returns 402 *before* the cache layer runs, and sealed pages are cache-safe by design (the encrypted body is static; the unlock never touches the page render).
 - **Cloudflare APO**: works.
 - **Multisite**: works per-site.
 - **REST API / WP-CLI / cron / xmlrpc**: skipped — those surfaces don't enforce.
@@ -84,14 +97,14 @@ Web Bot Auth verification is intentionally omitted from the WP plugin v0.1. PHP 
 - [Settlement rails](/docs/concepts/settlement-rails) — pick a payment rail
 - [Node adapters](/docs/getting-started/express) — Express, Fastify, Hono, Next.js
 
-## Pro features (coming soon)
+## Pro
 
-CrawlerToll Pro adds advanced tooling for publishers who want more than detection:
+[CrawlerToll Pro](/pro) ($29/mo or $249/yr, 14-day trial) adds the revenue tooling on top of the free paywall:
 
-- **Revenue dashboard** — how much money you could be earning from AI crawlers, per bot, per day
-- **Bot-request logs** — full crawl history, searchable and exportable (stored in a dedicated database table, not wp_options)
-- **Email alerts** — daily/weekly summaries of crawler activity with revenue estimates
-- **Per-path pricing** — charge different rates for different content sections
-- **Content provenance** — SHA-256 hashes of served content, creating an irrefutable timestamped record of what was crawled and when
-
-[Subscribe for updates →](https://crawlertoll.com#subscribe)
+- **Access tiers and bundles** — price × duration passes per path, or a whole-section pass
+- **Metered free articles** — N free reads per window, with a tunable per-IP ceiling
+- **Email-gated access** — unlock for a verified email address, with a GDPR consent split or consent-or-pay mode
+- **Per-path pricing and per-crawler rail routing**
+- **Revenue dashboard, decision logs with CSV/JSON export, retention control, email alerts**
+- **Unlock webhooks** — HMAC-signed `unlock.succeeded` events with a durable retry outbox
+- **Content provenance** — SHA-256 fingerprints of exactly what each crawler received

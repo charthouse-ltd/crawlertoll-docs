@@ -44,6 +44,7 @@ const NAV: NavSection[] = [
     links: [
       { label: "Decision tree", href: "/docs/concepts/decision-tree" },
       { label: "Settlement rails", href: "/docs/concepts/settlement-rails" },
+      { label: "Unlock service", href: "/docs/unlock-service" },
       { label: "Privacy posture", href: "/docs/concepts/privacy" },
     ],
   },

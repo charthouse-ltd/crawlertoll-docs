@@ -9,6 +9,8 @@ export function Footer() {
           <ul className="space-y-2 text-slate-600 dark:text-slate-400">
             <li><Link href="/docs">Documentation</Link></li>
             <li><Link href="/docs/getting-started/wordpress">WordPress Plugin</Link></li>
+            <li><Link href="/pro">CrawlerToll Pro</Link></li>
+            <li><Link href="/docs/unlock-service">Unlock service</Link></li>
             <li><Link href="/docs/standards">Standards</Link></li>
             <li><a href="https://github.com/charthouse-ltd/crawlertoll/blob/main/MANIFESTO.md">Manifesto</a></li>
             <li><a href="https://github.com/charthouse-ltd">GitHub</a></li>
@@ -37,7 +39,8 @@ export function Footer() {
           <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">License</h3>
           <p className="text-slate-600 dark:text-slate-400">
             Apache-2.0. Charthouse Ltd, UK.<br/>
-            <a href="mailto:hello@crawlertoll.com">hello@crawlertoll.com</a>
+            <a href="mailto:hello@crawlertoll.com">hello@crawlertoll.com</a><br/>
+            <Link href="/privacy">Privacy</Link>
           </p>
         </div>
       </div>

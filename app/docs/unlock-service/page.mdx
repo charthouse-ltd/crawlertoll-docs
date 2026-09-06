@@ -1,0 +1,62 @@
+export const metadata = {
+  title: "Unlock service (registry.crawlertoll.com) — CrawlerToll",
+  description: "The hosted key escrow behind the CrawlerToll sealed paywall: what it stores, what it never sees, its endpoints, the signing key, fail-closed behaviour, and the keyless x402 facilitator.",
+};
+
+# Unlock service
+
+The sealed paywall needs one thing that cannot live on the publisher's own server: somewhere to hold the content key that is **not** the page it protects. That is the unlock service — a small hosted key escrow at `https://registry.crawlertoll.com`, operated by Charthouse Ltd on Cloudflare Workers.
+
+It exists for three reasons:
+
+1. **Page caches.** A sealed post is static HTML with an encrypted body, so it survives any CDN or cache plugin. The unlock happens between the reader's browser and the service, never through the origin's page render.
+2. **Agents need a settlement endpoint.** x402 payments are verified and settled by a facilitator. The service speaks to a keyless third-party facilitator so publishers only have to paste a wallet address.
+3. **Passes roam.** Duration passes and bundle passes are server-side records, so a reader keeps access after clearing storage and across every article a bundle covers.
+
+## What it stores
+
+Per sealed post: the content key, the content id (`<host>/post/<id>`), price, currency, access tiers, bundle scope, meter and email-gate flags, the publisher's USDC address, and an optional facilitator override. Per unlock: a receipt with content id, rail, transaction reference, buyer reference and time. Publisher write credentials are stored as SHA-256 hashes.
+
+## What it never sees
+
+- The article text, in any form. Sealing happens in WordPress; the service only ever holds the key.
+- Card numbers, Stripe secrets, or a Stripe platform account. Cards run on the publisher's own Stripe account; the origin verifies the payment and then asks the service to release the key with a publisher-attested grant.
+- Facilitator API keys or wallet private keys. Charthouse holds **no payment credential of any kind**.
+
+## Endpoints
+
+| Route | Auth | Purpose |
+|---|---|---|
+| `GET /health` | none | Liveness |
+| `POST /v1/sealed/:id/key` | none | Reader/agent: no proof → signed 402 offer; x402 `PAYMENT-SIGNATURE` → `{cek, capability, pass}`; pass id → renewal; meter token → free read |
+| `POST /v1/email/redeem` | none | Email-gate magic-link redemption |
+| `POST /v1/sealed/register` | publisher bearer | Escrow a content key with its pricing rules |
+| `PATCH /v1/sealed/:id/price` | publisher bearer | Reprice without re-sealing |
+| `POST /v1/sealed/:id/grant` | publisher bearer | Publisher-attested paid release (card payments verified at the origin) |
+| `GET /v1/sealed/receipts` | publisher bearer | Recent unlock receipts |
+| `PUT /v1/webhooks/config`, `POST /v1/webhooks/test`, `GET /v1/webhooks/deliveries` | publisher bearer | Unlock webhooks (Pro) |
+
+Every 402 offer is signed. The public key for the live service is:
+
+```
+kid:    registry-ed25519-1
+public: LbxUp7KuOCR0Td/xACdl7moVFS3aXp/jaLBwJLEDcwk=   (Ed25519, base64)
+```
+
+Verify the offer signature before paying: a rewritten pay-to address invalidates it.
+
+## Fail-closed
+
+If the service cannot be reached at seal time, the plugin shows a graceful "unavailable" card and **no payment can be started**. If it cannot be reached mid-unlock, the reader sees "Could not reach the payment server" and nothing is charged. Money is never taken for content that cannot be unlocked. Every payment reference is single-use: replaying one yields `409 receipt_already_redeemed`.
+
+## x402 settlement
+
+Agent and wallet payments are `exact`-scheme EIP-3009 authorisations for USDC on Base (mainnet in production, Base Sepolia on the test environment). The service submits them to a keyless facilitator — `https://facilitator.xpay.sh` by default, `https://facilitator.payai.network` as an alternative — which broadcasts the transfer straight into the publisher's wallet. Publishers may set their own facilitator per site.
+
+## Availability
+
+There is no SLA at launch, for either tier. The service is a single point of failure for every install's revenue; the mitigations today are fail-closed behaviour everywhere, Cloudflare's anycast network, and health monitoring. A status page is next.
+
+## Pointing the plugin elsewhere
+
+The plugin talks to `https://registry.crawlertoll.com` by default. Define `CRAWLERTOLL_REGISTRY_URL` in `wp-config.php` to use another instance. Capability verification is offline (Ed25519 against the public key above), so the service is portable; a self-hosted option is deferred until after launch.

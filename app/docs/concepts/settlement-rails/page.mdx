@@ -1,76 +1,38 @@
 export const metadata = {
-  title: "Settlement rails",
-  description: "Comparison of x402, TollBit, Skyfire, Cloudflare PPC, Stripe ACP.",
+  title: "Settlement rails — CrawlerToll",
+  description: "How CrawlerToll gets publishers paid: USDC over x402 for AI agents, the publisher's own Stripe account for readers, and a custom payment URL. Why there is no take rate and no platform account.",
 };
 
 # Settlement rails
 
-CrawlerToll emits the 402 with a structured payment offer. Actual settlement happens on whichever rail you chose. Six options today:
+A rail is how money actually moves after a 402. CrawlerToll ships two rails that settle and one escape hatch. The design rule behind all of them: **the money never passes through Charthouse.** There is no CrawlerToll balance, no payout, no fee, and no payment credential held on our side.
 
-| Rail | What | Best for | Adapter |
+| Rail | Who pays | Where the money lands | Status |
 |---|---|---|---|
-| **`x402`** | Coinbase + LF stablecoin rail (USDC on Base etc.) | Agent-native, no human-tier vendor | [`@crawlertoll/x402`](https://www.npmjs.com/package/@crawlertoll/x402) |
-| **`tollbit`** | TollBit hosted paywall, 15-25% commission | Established publisher network | Coming (partnership-gated) |
-| **`skyfire`** | Skyfire KYAPay token rail | KYC-friendly agent payments | Coming (partnership-gated) |
-| **`cloudflare-ppc`** | Cloudflare Pay Per Crawl edge enforcement | If you already run on CF Enterprise | Coming (partnership-gated) |
-| **`stripe-acp`** | Stripe Agentic Commerce Protocol | Fiat-native commerce, EUR/USD/GBP | Coming (partnership-gated) |
-| **`context-license`** | Per the publisher's `/.well-known/context-license.json` offer | The publisher publishes their own quote | Built in via the spec |
-| **`custom`** | Bring your own | When none of the above fit | — |
+| **`x402`** | AI agents and wallet-holding readers | The publisher's own USDC address on Base | Live (mainnet in production, settled by a keyless third-party facilitator) |
+| **`stripe`** | Human readers by card, Apple Pay, Google Pay | The publisher's own Stripe account | Live (publisher pastes their own keys; the plugin creates and verifies the PaymentIntent on their account) |
+| **`custom`** | Anyone your hosted paywall accepts | Your existing provider | The 402 carries a `Link: <…>; rel="payment"` header to the URL you set; no sealing involved |
 
-## Picking a rail
+## x402
 
-### Pick `x402` if:
-- You want **agent-native, settled in seconds** — no human payment portal in the loop
-- Stablecoin denomination (USDC) is acceptable
-- You want **maximum vendor-neutrality** — x402 is LF-governed, no single company owns it
-- This is the **default** the playbook recommends as "likely the dominant settlement rail for paid crawls over the next 12-18 months"
+The open agent-payment standard (Linux Foundation x402 Foundation, Coinbase, Cloudflare, Stripe and others). The reader's or agent's wallet signs an EIP-3009 `transferWithAuthorization` for the exact price; the [unlock service](/docs/unlock-service) submits it to a facilitator, which broadcasts the USDC transfer into the publisher's wallet and returns the transaction hash. The key is released only after settlement is confirmed. CrawlerToll supports x402 V1 and V2 (`PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE` headers, CAIP-2 networks).
 
-### Pick `tollbit` if:
-- You're already a TollBit publisher
-- You want the hosted-paywall convenience + their 7,000+ publisher BD relationships
-- 15-25% commission is acceptable in exchange for managed integration
+Readers need an EIP-1193 wallet such as MetaMask, Coinbase Wallet or Rabby; the unlock app switches or adds the Base network for them. Agents built on Cloudflare's Agents SDK, Coinbase's x402 clients, or any conformant client pay without a browser.
 
-### Pick `skyfire` if:
-- You need KYC on the agent side (`KYAPay`)
-- You want a token rail without committing to a specific stablecoin
+Facilitators: `https://facilitator.xpay.sh` (default) and `https://facilitator.payai.network` (alternative) both settle on Base mainnet and Base Sepolia without an API key. Publishers can set their own facilitator per site.
 
-### Pick `cloudflare-ppc` if:
-- You're on Cloudflare Enterprise + already in the PPC closed beta
-- You want edge-level enforcement *and* application-tier policy (use CrawlerToll + PPC together)
+## Stripe
 
-### Pick `stripe-acp` if:
-- Your buyers are AI agents tied to a Stripe-managed wallet (Link, Agentic Commerce Suite)
-- Fiat-native settlement matters more than stablecoin throughput
+Cards for people. Paste your Stripe publishable key and a restricted secret key into Settings → CrawlerToll. The plugin creates a PaymentIntent on **your** account with the content id and tier bound in its metadata, Stripe's Payment Element collects the card in the reader's browser, the plugin verifies status, exact amount, currency and binding, and only then asks the unlock service to release the key. Disputes, receipts, invoices and tax reports are all Stripe's, on your account. Apple Pay needs your domain registered in your Stripe dashboard; Google Pay needs nothing.
 
-### Pick `context-license` if:
-- You publish your own `/.well-known/context-license.json` with a custom payment URL
-- The buyer SDK should read pricing + payout from your file rather than your 402 response
+Stripe's card floor applies: prices below $0.50 (or equivalent) are agent-only. Human prices normally live in access tiers ($3–10 passes), while the per-crawl price stays in fractions of a cent.
 
-### Pick `custom` if:
-- None of the above fit
-- You want to signal "contact us" via the `paymentUrl`
+## What about TollBit, Skyfire, Cloudflare Pay Per Crawl, Stripe's MPP?
 
-## They can coexist
-
-A single publisher can run multiple rails simultaneously. The 402 response sets one preferred rail in the `Crawler-Price-Rail` header, but the body's `offer` object can declare a separate `accepts[]` array (x402-style) listing multiple options.
-
-Cloudflare PPC + CrawlerToll is a particularly clean compose: PPC runs at the edge for the unauthenticated case, CrawlerToll runs at the app layer for finer-grained per-route policy.
-
-## What changes per rail in practice
-
-Just the `offer.rail` value (and optionally `offer.paymentUrl`). The `Crawler-Price` header still announces `<micros> <currency>`. The body still carries `error: "payment_required"`. The `Link rel="payment"` still points at the settlement URL when applicable. Switching rails is a one-line config change, not a re-integration.
-
-## Stability + governance
-
-| Rail | Stability | Governance |
-|---|---|---|
-| x402 | High — v2 spec (Dec 2025), LF foundation (Apr 2026) | Linux Foundation x402 Foundation |
-| TollBit | Established product (Lightspeed-backed, Series A) | Private company |
-| Skyfire | Funded but earlier-stage ($9.5M) | Private company |
-| Cloudflare PPC | Closed beta as of Q2 2026 | Cloudflare |
-| Stripe ACP | Launched Stripe Sessions 2026 | Stripe |
+They are part of the ecosystem, not rails inside CrawlerToll. Cloudflare's gateway moves money at the edge for its own customers and coexists with CrawlerToll at the origin. TollBit and Skyfire are hosted paywall networks; if you use one, the `custom` rail points crawlers at it. Stripe's Machine Payments Protocol sits above x402 and is on the roadmap, not in the product.
 
 ## See also
 
-- [HTTP 402 standard](/docs/standards/http-402) — the response shape that carries the offer
+- [Unlock service](/docs/unlock-service) — the key escrow and its fail-closed rules
 - [x402 standard](/docs/standards/x402) — deep-dive into the agent-native rail
+- [HTTP 402](/docs/standards/http-402) — the response every rail starts from
