@@ -1,0 +1,29 @@
+export const metadata = {
+  title: "Refunds and disputes — CrawlerToll",
+  description: "How refunds, chargebacks and access revocation work when the money never passes through CrawlerToll: card refunds on your own Stripe account, USDC returns on-chain, and revoking a reader's pass.",
+};
+
+# Refunds and disputes
+
+CrawlerToll never holds your money, so it never holds your refunds either. Every payment lives where it settled — on your Stripe account or in your wallet — and that is where a refund happens. The plugin gives you the links and one extra step: ending the reader's access.
+
+## Card payments (Stripe)
+
+1. Open the receipt in **Settings → CrawlerToll → Recent unlocks**. Each card receipt links straight to the payment in your Stripe dashboard.
+2. Refund it in Stripe, fully or partially, exactly as you would any other charge. Stripe's fees, receipts and tax reports apply as normal.
+3. Back in CrawlerToll, click **Revoke access** on that receipt (Pro). The reader's settlement pass is cancelled at the unlock service, so it no longer renews on any device. Content already decrypted in their browser cannot be pulled back — that is true of every paywall — but nothing new is released.
+
+**Disputes and chargebacks** are between the cardholder, their bank and your Stripe account. Stripe notifies you; you respond in the Stripe dashboard. Useful evidence: the receipt's content id and time, and the fact that the key was released only after the payment succeeded (the unlock service records every release). CrawlerToll takes no fee and is not a party to the charge.
+
+## USDC payments (x402)
+
+On-chain payments are final. To refund, send the USDC back to the payer's wallet — the address is on the transaction the receipt links to. Then revoke the pass as above.
+
+## What "Revoke access" does and does not do
+
+- Does: delete the settlement pass at the unlock service, so renewals return a 402 and the reader sees the wall again on every device.
+- Does not: reach into the reader's browser. The key they already used stays in their local cache until they clear it. There is no way around this for any paywall, encrypted or not.
+
+## Policy
+
+Publish your own refund policy; readers see your terms link in the 402 offer and on the wall footer. Stripe requires one for card payments. CrawlerToll enforces nothing about refunds beyond giving you the tools above.

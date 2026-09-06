@@ -45,6 +45,7 @@ const NAV: NavSection[] = [
       { label: "Decision tree", href: "/docs/concepts/decision-tree" },
       { label: "Settlement rails", href: "/docs/concepts/settlement-rails" },
       { label: "Unlock service", href: "/docs/unlock-service" },
+      { label: "Refunds and disputes", href: "/docs/refunds" },
       { label: "Privacy posture", href: "/docs/concepts/privacy" },
     ],
   },
