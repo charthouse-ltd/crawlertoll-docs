@@ -27,8 +27,11 @@ export default function HomePage() {
               WordPress Plugin &middot; Node Middleware &middot; Apache 2.0 &middot; Vendor-neutral
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6 leading-[1.1]">
-              Make AI crawlers pay for your content.
+              The paywall where the content itself is the lock.
             </h1>
+            <p className="text-2xl text-slate-700 dark:text-slate-300 font-medium leading-snug max-w-3xl mb-4">
+              One paywall for humans and bots. Encrypted, tagged, paid straight to you.
+            </p>
             <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mb-4">
               CrawlerToll recognises 30 declared AI-crawler user-agents — GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more — applies your RSL 1.0 policy, and issues HTTP 402 Payment Required with a structured payment offer. On WordPress it also seals premium content: the body is encrypted on the page and only unlocks against a payment made directly to you.
             </p>
@@ -37,10 +40,10 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/docs/getting-started/wordpress"
+                href="/pro"
                 className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-5 py-3 text-sm font-medium hover:bg-blue-700 transition"
               >
-                WordPress Plugin →
+                Get CrawlerToll for WordPress →
               </Link>
               <Link
                 href="/docs/getting-started/express"
@@ -66,6 +69,47 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* What it does — four pillars, each a defensible claim (claims freeze D7) */}
+      <section className="border-b border-slate-200 dark:border-slate-800">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+          <div className="max-w-3xl mb-10">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-3">What CrawlerToll does</h2>
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+              You mark a post premium and place the cut. From that moment the article body is not on the page in the clear — for anyone, human or bot — until a payment made directly to you releases the key.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                title: "Encrypted",
+                body: "The sealed body is AES-256-GCM ciphertext on the page. Caches, feeds, the REST API and scrapers that pretend to be people all get the same thing: the preview and an encrypted blob.",
+              },
+              {
+                title: "Tagged",
+                body: "Machine-readable terms everywhere: RSL 1.0 in robots.txt, a signed HTTP 402 offer with x402 headers for agents, and paywall structured data so search engines index the preview and understand the lock.",
+              },
+              {
+                title: "Paid to you",
+                body: "Readers pay by card, Apple Pay or Google Pay on your own Stripe account. AI agents pay in USDC straight into your wallet. CrawlerToll holds no payment credential and takes no cut — ever.",
+              },
+              {
+                title: "Fail-closed",
+                body: "The key is released only against a settled payment, every payment reference is single-use, and if the unlock service is unreachable nothing can be charged. Your content and your customers are never left half-way.",
+              },
+            ].map((f) => (
+              <div key={f.title} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5">
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">{f.title}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{f.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-sm text-slate-500 dark:text-slate-500">
+            Free on wp.org with both payment rails. <Link href="/pro" className="text-blue-600 dark:text-blue-400 hover:underline">Pro</Link> adds access tiers, bundles, metered free articles, email-gated access, webhooks and the revenue dashboard.
+          </p>
+        </div>
+      </section>
+
 
       {/* Standards */}
       <section className="border-b border-slate-200 dark:border-slate-800">
