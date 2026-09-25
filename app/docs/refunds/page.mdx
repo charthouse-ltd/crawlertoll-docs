@@ -19,6 +19,16 @@ CrawlerToll never holds your money, so it never holds your refunds either. Every
 
 On-chain payments are final. To refund, send the USDC back to the payer's wallet — the address is on the transaction the receipt links to. Then revoke the pass as above.
 
+## EU and UK right of withdrawal
+
+Consumers in the EU and UK can usually cancel an online purchase within 14 days. For digital content that is delivered immediately, the right ends only when the reader has **agreed to immediate access** and **acknowledged that they lose the right of withdrawal**, and the seller confirms that on a durable medium. You are the seller, so this is your obligation. CrawlerToll gives you the three pieces:
+
+1. **Consent before payment.** Under Settings → CrawlerToll → *EU/UK right of withdrawal*, the paid options on the wall stay locked until the reader ticks an unticked box with that statement. *Automatic* turns this on for sites whose timezone or language looks European; choose *Always ask* if you sell to European readers from elsewhere.
+2. **Your evidence.** For card payments your site refuses to start the payment without consent, then stores the consent time and the exact sentence on the PaymentIntent in your own Stripe account. For card and USDC payments the unlock service stores the consent time with the receipt, shown under *Recent unlocks*.
+3. **The reader's copy.** After a paid unlock the reader can save a receipt file that names you, the article, the price, the date and the consent they gave.
+
+Free reads, email unlocks and pass renewals are not purchases and are not affected. This helps you meet the rule; it is not legal advice.
+
 ## What "Revoke access" does and does not do
 
 - Does: delete the settlement pass at the unlock service, so renewals return a 402 and the reader sees the wall again on every device.
