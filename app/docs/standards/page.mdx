@@ -1,0 +1,18 @@
+export const metadata = {
+  title: "Standards — CrawlerToll",
+  description: "The open standards CrawlerToll implements: RSL 1.0, HTTP 402, x402, Web Bot Auth and Context License.",
+};
+
+# Standards
+
+CrawlerToll does not invent a protocol. It implements the open standards that consolidated around paid access for people and AI agents in 2025 and 2026, so your content speaks the same language as the crawlers, agents and wallets that read it.
+
+| Standard | What it does for you |
+|---|---|
+| [RSL 1.0](/docs/standards/rsl-1-0) | Declares your licensing terms for AI use in robots.txt, in a vocabulary crawlers already parse. |
+| [HTTP 402](/docs/standards/http-402) | The "Payment Required" response a declared AI crawler receives, with the price and rail in headers. |
+| [x402](/docs/standards/x402) | The payment rail agents and wallets use to pay that 402 in USDC, straight to your wallet. |
+| [Web Bot Auth](/docs/standards/web-bot-auth) | Cryptographic bot identity, so a signed crawler can be recognised without trusting its user agent. |
+| [Context License](/docs/standards/context-license) | One JSON file at `/.well-known/context-license.json` that tells agents your price, licence and payout before they ask. |
+
+Sealed content sits on top of these: the article body is encrypted, and the key is released after a payment settled on one of these rails. See [Unlock service](/docs/unlock-service) for how that works.

@@ -1,0 +1,31 @@
+name: CI
+
+# Docs + marketing site. Vercel deploys on push; this gate catches a broken
+# build, a type error, or a page the sitemap/plugin links to that no longer
+# answers 200 — before customers do.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Every sitemap route answers 200
+        run: |
+          npx next start -p 3000 > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:3000/ && break; sleep 1; done
+          BASE=http://127.0.0.1:3000 node scripts/check-routes.mjs
