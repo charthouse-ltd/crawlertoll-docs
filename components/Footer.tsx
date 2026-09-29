@@ -46,6 +46,11 @@ export function Footer() {
       </div>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8 text-xs text-slate-500 dark:text-slate-500">
         © {new Date().getFullYear()} Charthouse Ltd. CrawlerToll™ is a trademark of Charthouse Ltd. All specs implemented are open standards under their own licenses.
+        <br />
+        {/* UK trading disclosures (Companies Act 2006; Company, LLP and Business Names Regulations 2015). */}
+        Charthouse Ltd is a private limited company registered in England and Wales, company number{" "}
+        <a href="https://find-and-update.company-information.service.gov.uk/company/12795844">12795844</a>. Registered office:
+        71-75 Shelton Street, Covent Garden, London WC2H 9JQ, United Kingdom.
       </div>
     </footer>
   );
