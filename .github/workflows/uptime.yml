@@ -1,0 +1,69 @@
+name: Uptime
+
+# $0 uptime monitor (review 2026-09-30): the unlock service fails CLOSED, so
+# when it is down nobody can buy anything, and until now nobody would know.
+# Every 10 minutes: check the unlock service and the website. On failure open
+# one "outage" issue (GitHub emails the repo's watchers); on recovery close it.
+# Scheduled runs can start a few minutes late; this is a smoke alarm, not an SLA.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe
+        id: probe
+        run: |
+          fail=""
+          probe() { # name url expected-codes [jq-filter]
+            code=$(curl -s -o /tmp/body -w '%{http_code}' --max-time 20 -L "$2" || echo 000)
+            if ! echo " $3 " | grep -q " $code "; then fail="$fail\n- $1: HTTP $code ($2)"; return; fi
+            if [ -n "${4:-}" ] && ! jq -e "$4" /tmp/body >/dev/null 2>&1; then fail="$fail\n- $1: unexpected body ($2): $(head -c 200 /tmp/body)"; fi
+          }
+          probe "unlock service health" "https://registry.crawlertoll.com/health" "200" '.status == "ok"'
+          probe "unlock service read path" "https://registry.crawlertoll.com/v1/stats" "200"
+          probe "website (www)" "https://www.crawlertoll.com/" "200"
+          probe "website (apex)" "https://crawlertoll.com/" "200"
+          if [ -n "$fail" ]; then
+            printf "failed<<EOF\n%b\nEOF\n" "$fail" >> "$GITHUB_OUTPUT"
+            printf "%b\n" "$fail"
+          else
+            echo "all checks passed"
+          fi
+
+      - name: Open or update the outage issue
+        if: steps.probe.outputs.failed != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED: ${{ steps.probe.outputs.failed }}
+        run: |
+          gh label create outage --color B60205 --description "Uptime monitor" -R "$GITHUB_REPOSITORY" 2>/dev/null || true
+          open=$(gh issue list -R "$GITHUB_REPOSITORY" --label outage --state open --json number --jq '.[0].number')
+          body=$(printf "Checked %s UTC\n%s\n\nRunbook: registry down → Cloudflare status, \`wrangler tail\`, \`wrangler rollback\`." "$(date -u +'%Y-%m-%d %H:%M')" "$FAILED")
+          if [ -z "$open" ]; then
+            gh issue create -R "$GITHUB_REPOSITORY" --label outage --title "Outage: CrawlerToll check failing" --body "$body"
+          else
+            gh issue comment "$open" -R "$GITHUB_REPOSITORY" --body "$body"
+          fi
+          exit 1
+
+      - name: Close the outage issue on recovery
+        if: steps.probe.outputs.failed == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list -R "$GITHUB_REPOSITORY" --label outage --state open --json number --jq '.[].number'); do
+            gh issue close "$n" -R "$GITHUB_REPOSITORY" --comment "Recovered at $(date -u +'%Y-%m-%d %H:%M') UTC: all checks passing."
+          done
