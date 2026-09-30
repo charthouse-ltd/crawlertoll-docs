@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+// Our own marketing and docs pages are meant to be found and quoted, by search
+// engines and AI assistants alike (we used to block GPTBot/ClaudeBot here).
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -7,22 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: ["/api/", "/_next/"],
-      },
-      {
-        userAgent: "GPTBot",
-        disallow: "/",
-      },
-      {
-        userAgent: "ClaudeBot",
-        disallow: "/",
-      },
-      {
-        userAgent: "Google-Extended",
-        disallow: "/",
-      },
-      {
-        userAgent: "CCBot",
-        disallow: "/",
       },
     ],
     sitemap: "https://crawlertoll.com/sitemap.xml",

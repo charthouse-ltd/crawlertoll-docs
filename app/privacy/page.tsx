@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { TopNav } from "@/components/TopNav";
 
 export const metadata: Metadata = {
-  title: "Privacy — CrawlerToll",
+  title: "Privacy",
   description:
     "What CrawlerToll collects and what it does not: this website, the WordPress plugin, the hosted unlock service, and the payment rails. Charthouse Ltd is the controller for the unlock service; publishers are the controller for their own sites.",
   alternates: { canonical: "https://crawlertoll.com/privacy" },
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
       <TopNav />
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-2">Privacy</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-500 mb-8">Last updated 29 September 2026 · Charthouse Ltd, company 12795844, England and Wales ·<a className="text-blue-600 dark:text-blue-400 hover:underline" href="mailto:hello@crawlertoll.com">hello@crawlertoll.com</a></p>
+        <p className="text-sm text-slate-500 dark:text-slate-500 mb-8">Last updated 30 September 2026 · Charthouse Ltd, company 12795844, England and Wales ·<a className="text-blue-600 dark:text-blue-400 hover:underline" href="mailto:hello@crawlertoll.com">hello@crawlertoll.com</a></p>
 
         <p className={P}>
           CrawlerToll is built so that as little data as possible reaches us. Article text never leaves the publisher&apos;s site in the clear, card details never touch our systems, and we hold no payment credentials. This page says exactly what each part handles.
@@ -43,11 +43,12 @@ export default function PrivacyPage() {
         </p>
         <ul className={UL}>
           <li><strong>Metered free articles</strong> (Pro): the reader&apos;s free-allowance identity is a random token in their browser. To limit abuse, the service keeps a salted, daily-rotating hash of the IP address for the metering window; the raw address is not stored.</li>
-          <li><strong>Email-gated access</strong> (Pro): the reader&apos;s email address and consent record are stored by the publisher&apos;s WordPress, which is the controller for them. The unlock service keeps only a SHA-256 hash of the address and sends the one-time access link.</li>
+          <li><strong>Email-gated access</strong> (Pro, not yet switched on): when it is, the reader&apos;s email address and consent record are stored by the publisher&apos;s WordPress, which is the controller for them. The unlock service keeps only a SHA-256 hash of the address and sends the one-time access link through Postmark (ActiveCampaign, Inc.) as processor.</li>
+          <li><strong>In the reader&apos;s browser:</strong> after an unlock, the content key and access pass are kept in the browser&apos;s local storage so the reader is not charged twice; metered free reads keep a random identifier there and in a first-party cookie. Nothing identifies the reader by name.</li>
           <li><strong>Unlock webhooks</strong> (Pro): if the publisher configures a webhook, unlock events are delivered to the URL they chose, signed with their own secret.</li>
         </ul>
         <p className={P}>
-          The service runs on Cloudflare Workers, KV and D1 (Cloudflare, Inc. as processor). Single-use payment references expire automatically. Content keys, pricing rules and receipts are kept for the publisher&apos;s records until the publisher asks us to delete them; we delete them within 30 days of that request, except records the law requires us to keep.
+          The service runs on Cloudflare Workers, KV and D1 (Cloudflare, Inc. as processor). If it cannot be reached, sealed posts stay locked and no payment can start; there is no service-level agreement at launch. Single-use payment references expire automatically. Content keys, pricing rules and receipts are kept for the publisher&apos;s records until the publisher asks us to delete them; we delete them within 30 days of that request, except records the law requires us to keep.
         </p>
 
         <h2 className={H2}>Payments</h2>
@@ -56,6 +57,15 @@ export default function PrivacyPage() {
           <li><strong>USDC over x402:</strong> the reader&apos;s or agent&apos;s wallet signs an authorisation which a third-party facilitator settles on the Base blockchain into the publisher&apos;s wallet. The transaction, including both wallet addresses and the amount, is public on-chain by the nature of the network. The default facilitator is xpay (facilitator.xpay.sh); publishers can choose another.</li>
         </ul>
         <p className={P}>Charthouse never holds a Stripe secret, a payment-platform account, or a facilitator key, and never takes a share of any payment.</p>
+
+        <h2 className={H2}>Processors we use</h2>
+        <ul className={UL}>
+          <li>Cloudflare, Inc.: runs the unlock service and routes our email.</li>
+          <li>Vercel Inc.: hosts this website.</li>
+          <li>Freemius, Inc.: sells and licenses CrawlerToll Pro, as merchant of record.</li>
+          <li>Postmark (ActiveCampaign, Inc.): sends one-time access links, once email access is switched on.</li>
+        </ul>
+        <p className={P}>Stripe and the x402 facilitator process payments for the publisher, not for us. Some of these providers are in the United States; transfers rely on their standard contractual safeguards.</p>
 
         <h2 className={H2}>Who we are</h2>
         <p className={P}>

@@ -9,7 +9,7 @@ import { StandardCard } from "@/components/StandardCard";
 import { TopNav } from "@/components/TopNav";
 
 export const metadata: Metadata = {
-  title: "CrawlerToll — Make AI Crawlers Pay. WordPress Plugin + Node Middleware for HTTP 402 & RSL 1.0",
+  title: { absolute: "CrawlerToll — Encrypt your content. The WordPress paywall where the content is the lock" },
   description:
     "The paywall where the content itself is the lock. Recognises 30 declared AI-crawler user-agents, applies RSL 1.0 policy, issues HTTP 402, and seals premium content — paid by card on your own Stripe account or in USDC to your own wallet. WordPress plugin + Express, Fastify, Hono, Next.js adapters. Free & open source.",
   alternates: { canonical: "https://crawlertoll.com" },
@@ -391,20 +391,6 @@ wp plugin install crawlertoll --activate`,
                 GitHub repo →
               </a>
             </div>
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Insights dashboard</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                Anonymised, opt-in telemetry across CrawlerToll installs. Privacy-first. CF Worker + static dashboard.
-              </p>
-              <a
-                href="https://crawlertoll.com/insights"
-                target="_blank"
-                rel="noopener"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                See insights →
-              </a>
-            </div>
           </div>
         </div>
       </section>
@@ -426,16 +412,16 @@ wp plugin install crawlertoll --activate`,
             </div>
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
-                Privacy-first telemetry.
+                Little data, none of it your articles.
               </h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                The optional insights pipeline accepts <strong>six fields only</strong>: operator, bot name, action, category, verified flag, and a clamped path segment. No IPs, no full UAs, no full URLs, no headers, no PII.
+                Article text never leaves your server in the clear, card details go only to Stripe, and we hold no payment credentials. The unlock service keeps content keys, prices and unlock receipts, nothing more.
               </p>
               <Link
-                href="/docs/concepts/privacy"
+                href="/privacy"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
               >
-                Read the privacy posture →
+                Read exactly what we store →
               </Link>
             </div>
           </div>

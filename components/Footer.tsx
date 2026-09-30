@@ -12,7 +12,6 @@ export function Footer() {
             <li><Link href="/pro">CrawlerToll Pro</Link></li>
             <li><Link href="/docs/unlock-service">Unlock service</Link></li>
             <li><Link href="/docs/standards">Standards</Link></li>
-            <li><a href="https://github.com/charthouse-ltd/crawlertoll/blob/main/MANIFESTO.md">Manifesto</a></li>
             <li><a href="https://github.com/charthouse-ltd">GitHub</a></li>
           </ul>
         </div>
@@ -32,7 +31,7 @@ export function Footer() {
             <li><a href="https://rslstandard.org">RSL 1.0</a></li>
             <li><a href="https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/">Web Bot Auth</a></li>
             <li><a href="https://x402.org">x402</a></li>
-            <li><a href="https://context-license.org">Context License</a></li>
+            <li><Link href="/docs/standards/context-license">Context License</Link></li>
           </ul>
         </div>
         <div>

@@ -17,15 +17,16 @@ import { TopNav } from "@/components/TopNav";
  */
 
 export const metadata: Metadata = {
-  title: "CrawlerToll Pro — the paywall where the content itself is the lock",
+  title: { absolute: "CrawlerToll Pro — the paywall where the content itself is the lock" },
   description:
-    "CrawlerToll Pro for WordPress: access tiers, bundles, metered free articles, email-gated access, unlock webhooks, revenue dashboard. Readers pay by card on your own Stripe account, AI agents pay in USDC to your own wallet. 14-day free trial, no card required. $29/mo or $249/yr.",
+    "CrawlerToll Pro for WordPress: access tiers, bundles, metered free articles, unlock webhooks, revenue dashboard. Readers pay by card on your own Stripe account, AI agents pay in USDC to your own wallet. 14-day free trial, no card required. $29/mo or $249/yr.",
   alternates: { canonical: "https://crawlertoll.com/pro" },
   openGraph: {
     title: "CrawlerToll Pro — the paywall where the content itself is the lock",
     description:
       "Seal your premium posts. Readers pay by card, AI agents pay in USDC — straight to you. CrawlerToll never touches the money. 14-day free trial.",
     type: "website",
+    images: ["/opengraph-image.png"],
   },
 };
 
@@ -51,10 +52,6 @@ const FEATURES = [
   {
     title: "Metered free articles",
     body: "N free reads per 30 days per path, with an abuse ceiling per IP you can tune. The meter is a free-allowance identity, never an account — readers stay anonymous.",
-  },
-  {
-    title: "Email-gated access",
-    body: "Unlock for a verified email address instead of money. GDPR-clean consent split by default, or a consent-or-pay mode. Your WordPress stays the data controller; the unlock service only ever sees a hash.",
   },
   {
     title: "Per-path pricing and rail routing",
@@ -92,7 +89,7 @@ const FAQ = [
   },
   {
     q: "What does the free version do vs Pro?",
-    a: "Free is the whole paywall: recognition of 30 declared AI crawlers, RSL policy, flat-price 402s, the sealed-content engine, and both payment rails. Pro adds access tiers and bundles, metered free articles, email-gated access, per-path pricing, rail routing, the revenue dashboard, logs, alerts, and unlock webhooks.",
+    a: "Free is the whole paywall: recognition of 30 declared AI crawlers, RSL policy, flat-price 402s, the sealed-content engine, and both payment rails. Pro adds access tiers and bundles, metered free articles, per-path pricing, rail routing, the revenue dashboard, logs, alerts, and unlock webhooks.",
   },
   {
     q: "Will this hurt my SEO?",
@@ -189,7 +186,7 @@ export default function ProPage() {
             <ul className="mt-4 mb-6 flex flex-col gap-2 flex-1">
               {[
                 "Everything in free",
-                "Access tiers, bundles, metered free articles, email-gated access",
+                "Access tiers, bundles, metered free articles",
                 "Per-path pricing with wildcards, per-crawler rail routing",
                 "Revenue dashboard, decision logs with export, retention control",
                 "Daily and weekly email alerts",

@@ -10,36 +10,32 @@ import "./globals.css";
 const display = Fraunces({ subsets: ["latin"], axes: ["opsz", "SOFT"], variable: "--font-display", display: "swap" });
 const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
+const DESC =
+  "The WordPress paywall where the content itself is the lock. Premium posts are encrypted in the page until a reader or AI agent pays you directly, by card on your own Stripe or in USDC. No cut taken. Also recognises 30 declared AI-crawler user-agents and answers them with a priced HTTP 402.";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://crawlertoll.com"),
   title: {
-    default: "CrawlerToll — Make AI Crawlers Pay. Open-Source Middleware for HTTP 402, RSL 1.0 & Web Bot Auth.",
+    default: "CrawlerToll — Encrypt your content. The WordPress paywall where the content is the lock",
     template: "%s · CrawlerToll",
   },
-  description:
-    "Open-source Node & WordPress middleware for the AI-crawler economy. Detect 30+ AI bots (GPTBot, ClaudeBot, PerplexityBot), apply RSL 1.0 policy, issue HTTP 402 Payment Required with structured offers. Vendor-neutral — works with Cloudflare, TollBit, Skyfire, x402, Stripe. Apache 2.0.",
+  description: DESC,
   keywords: [
-    "AI crawler", "GPTBot", "ClaudeBot", "HTTP 402", "pay per crawl",
-    "RSL 1.0", "Web Bot Auth", "x402", "AI content licensing",
-    "WordPress AI crawler", "block AI bots", "monetize AI traffic",
-    "context license", "crawler toll", "Node middleware",
-    "Express middleware", "Fastify plugin", "Hono middleware",
-    "Next.js middleware", "AI bot detection",
+    "WordPress paywall", "sell articles WordPress", "pay per article", "Stripe paywall",
+    "encrypted paywall", "AI crawler", "GPTBot", "HTTP 402", "x402", "RSL 1.0",
+    "AI content licensing", "no revenue share paywall",
   ],
   openGraph: {
-    title: "CrawlerToll — Make AI Crawlers Pay",
-    description:
-      "Open-source middleware for the AI-crawler economy. Detect AI bots, apply RSL 1.0 policy, issue HTTP 402. WordPress + Node + Edge. Apache 2.0.",
-    url: "https://crawlertoll.com",
+    title: "CrawlerToll — Encrypt your content",
+    description: "The WordPress paywall where the content itself is the lock. Readers and AI agents pay you directly. No cut taken.",
     siteName: "CrawlerToll",
     type: "website",
-    locale: "en_US",
+    locale: "en_GB",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CrawlerToll — Make AI Crawlers Pay",
-    description:
-      "Open-source middleware for the AI-crawler economy. HTTP 402 + RSL 1.0 + Web Bot Auth. WordPress plugin + Node adapters. Apache 2.0.",
+    title: "CrawlerToll — Encrypt your content",
+    description: "The WordPress paywall where the content itself is the lock. Readers and AI agents pay you directly. No cut taken.",
   },
   robots: {
     index: true,
@@ -47,8 +43,10 @@ export const metadata: Metadata = {
     "max-snippet": -1,
     "max-image-preview": "large",
   },
+  // Each page's own URL (a fixed homepage canonical here was inherited by every
+  // docs page and told search engines to drop them).
   alternates: {
-    canonical: "https://crawlertoll.com",
+    canonical: "./",
   },
 };
 
@@ -63,15 +61,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
               name: "CrawlerToll",
-              applicationCategory: "DeveloperApplication",
-              operatingSystem: "Linux, macOS, Windows, Cloudflare Workers, Vercel Edge",
-              description:
-                "Open-source middleware for the AI-crawler economy. Detects AI crawlers, applies RSL 1.0 policy, and issues HTTP 402 Payment Required with structured payment offers.",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "WordPress",
+              description: DESC,
               url: "https://crawlertoll.com",
               author: {
                 "@type": "Organization",
                 name: "Charthouse Ltd",
-                url: "https://charthouse.io",
+                url: "https://crawlertoll.com",
               },
               license: "https://www.apache.org/licenses/LICENSE-2.0",
               offers: {
