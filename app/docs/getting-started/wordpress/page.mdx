@@ -61,7 +61,7 @@ Settings → CrawlerToll:
 
 ## Selling to readers: the sealed paywall
 
-Mark a post **Premium** in the editor sidebar and place the paywall cut — drag the bar between blocks, or click "Place paywall cut at cursor" to end the preview mid-sentence. On the first anonymous view the plugin splits the post, encrypts the body with AES-256-GCM, escrows the key with the [unlock service](/docs/unlock-service), and serves the preview plus the encrypted body. Excerpts, feeds, oEmbed and the REST API only ever see the preview; paywall structured data (`isAccessibleForFree: false` + `hasPart`) tells search engines what is going on.
+Switch on **Premium** in the **Paywall** panel of the editor sidebar and place the paywall cut — drag the bar between blocks, or click "Place paywall cut at cursor" to end the preview mid-sentence. Set what one article costs under **Settings → CrawlerToll → Article price for readers** (default $1.00; cards need at least $0.50). When you publish or update the post, the plugin splits it, encrypts the body with AES-256-GCM, escrows the key with the [unlock service](/docs/unlock-service), and serves the preview plus the encrypted body. Excerpts, feeds, oEmbed and the REST API only ever see the preview; paywall structured data (`isAccessibleForFree: false` + `hasPart`) tells search engines what is going on.
 
 Readers see a wall with one tile per rail: **pay by card** (Stripe Payment Element, with Apple Pay / Google Pay where available) and **pay with USDC** (any EIP-1193 wallet; the app switches to Base for them). AI agents get the same offer as a signed HTTP 402 with x402 V2 headers. After payment the browser decrypts in place, caches the key on the device, and holds a settlement pass so access survives a cleared cache.
 
