@@ -8,7 +8,7 @@ button{font:inherit;padding:10px 16px;border-radius:8px;border:0;background:#1d1
 <p class="note"><strong>Test page.</strong> For the CrawlerToll operator's own check of the AI-training licence on Base mainnet. Please don't pay. <span id="terms">The licence covers the demo article only.</span></p>
 <h1>Buy the AI-training licence</h1>
 <p>Pays <strong>$0.50 USDC</strong> on Base for the demo article plus the right to train on it (tier <code>l0</code>), then checks the signed licence against the unlock service's published key.</p>
-<p><button id="buy">Connect wallet and buy</button></p>
+<p id="wallets">Looking for wallets in this browser…</p>
 <pre id="out">Waiting.</pre>
 <script type="module">
 const CFG = {"registry":"https://registry.crawlertoll.com","cid":"www.crawlertoll.com/post/1","micros":500000};
@@ -16,19 +16,37 @@ const out = (t) => (document.getElementById("out").textContent = t);
 const b64 = (u8) => btoa(String.fromCharCode(...u8));
 const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 const canon = (v) => Array.isArray(v) ? "[" + v.map(canon).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map((k) => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}" : JSON.stringify(v);
-document.getElementById("buy").onclick = async () => {
+// Wallets announce themselves (EIP-6963), as on the article pages; the legacy
+// window.ethereum is the fallback.
+const found = new Map();
+window.addEventListener("eip6963:announceProvider", (e) => { const d = e.detail; if (d && d.info && d.provider) found.set(d.info.uuid, d); });
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+setTimeout(() => {
+  const list = [...found.values()];
+  if (list.length === 0 && window.ethereum) list.push({ info: { name: "Browser wallet" }, provider: window.ethereum });
+  const box = document.getElementById("wallets");
+  if (list.length === 0) { box.textContent = "No browser wallet found. Use a desktop browser with MetaMask, Rabby or the Coinbase Wallet extension."; return; }
+  box.textContent = "";
+  for (const w of list) {
+    const btn = document.createElement("button");
+    btn.textContent = "Buy with " + w.info.name;
+    btn.style.marginRight = "8px";
+    btn.onclick = () => buy(w.provider);
+    box.appendChild(btn);
+  }
+}, 400);
+async function buy(wallet) {
   try {
-    if (!window.ethereum) return out("No browser wallet found (MetaMask, Rabby or the Coinbase Wallet extension).");
     out("Loading the offer…");
     const offer = await (await fetch(CFG.registry + "/v1/sealed/" + CFG.cid + "/key", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).json();
     const x = offer.x402;
-    const [account] = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const [account] = await wallet.request({ method: "eth_requestAccounts" });
     const chain = "0x" + x.eip712.chainId.toString(16);
-    if ((await window.ethereum.request({ method: "eth_chainId" })) !== chain) await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chain }] });
+    if ((await wallet.request({ method: "eth_chainId" })) !== chain) await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chain }] });
     const authorization = { from: account, to: x.payTo, value: String(CFG.micros), validAfter: "0", validBefore: String(Math.floor(Date.now() / 1000) + 600), nonce: "0x" + [...crypto.getRandomValues(new Uint8Array(32))].map((b) => b.toString(16).padStart(2, "0")).join("") };
     const typed = { types: { EIP712Domain: [{ name: "name", type: "string" }, { name: "version", type: "string" }, { name: "chainId", type: "uint256" }, { name: "verifyingContract", type: "address" }], TransferWithAuthorization: [{ name: "from", type: "address" }, { name: "to", type: "address" }, { name: "value", type: "uint256" }, { name: "validAfter", type: "uint256" }, { name: "validBefore", type: "uint256" }, { name: "nonce", type: "bytes32" }] }, domain: x.eip712, primaryType: "TransferWithAuthorization", message: authorization };
     out("Approve the signature in your wallet…");
-    const signature = await window.ethereum.request({ method: "eth_signTypedData_v4", params: [account, JSON.stringify(typed)] });
+    const signature = await wallet.request({ method: "eth_signTypedData_v4", params: [account, JSON.stringify(typed)] });
     const pay = btoa(JSON.stringify({ x402Version: 2, scheme: "exact", network: x.networkCaip2, accepted: { scheme: "exact", network: x.networkCaip2, amount: String(CFG.micros), asset: x.asset, payTo: x.payTo, maxTimeoutSeconds: 300 }, payload: { signature, authorization }, extensions: {} }));
     out("Settling on Base…");
     const res = await fetch(CFG.registry + "/v1/sealed/" + CFG.cid + "/key", { method: "POST", headers: { "Content-Type": "application/json", "PAYMENT-SIGNATURE": pay }, body: JSON.stringify({ tier_id: "l0" }) });
@@ -43,6 +61,6 @@ document.getElementById("buy").onclick = async () => {
   } catch (e) {
     out("Stopped: " + (e && e.message ? e.message : e));
   }
-};
+}
 </script>
 </body></html>
