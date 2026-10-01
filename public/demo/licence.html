@@ -61,13 +61,16 @@ setTimeout(async () => {
 async function start(wallet) {
   try {
     const [account] = await wallet.request({ method: "eth_requestAccounts" });
+    // Smart wallets (Coinbase) sign a chain-bound hash: be on Base first,
+    // like the buy step, or the signature is for another chain.
+    if ((await wallet.request({ method: "eth_chainId" })) !== "0x2105") await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x2105" }] });
     const message = "CrawlerToll licence check\nContent: " + CFG.cid + "\nAddress: " + account + "\nIssued: " + new Date().toISOString();
     out("Sign the message in your wallet (free, no payment)…");
     const hex = "0x" + [...new TextEncoder().encode(message)].map((b) => b.toString(16).padStart(2, "0")).join("");
     const signature = await wallet.request({ method: "personal_sign", params: [hex, account] });
     const res = await fetch(CFG.registry + "/v1/sealed/" + CFG.cid + "/licence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address: account, message, signature }) });
     const body = await res.json();
-    if (!res.ok) return out("Could not check (HTTP " + res.status + "): " + (body.error || ""));
+    if (!res.ok) return out("Could not check (HTTP " + res.status + "): " + (body.error || "") + "\n\nFor support (not secret): address " + account + "\nmessage: " + JSON.stringify(message) + "\nsignature: " + signature);
     if (body.licensed) return showLicence(body, "You already hold this licence: nothing to pay.\n");
     const box = document.getElementById("wallets");
     box.textContent = "";
