@@ -7,7 +7,7 @@ button{font:inherit;padding:10px 16px;border-radius:8px;border:0;background:#1d1
 <body>
 <p class="note"><strong>Test page.</strong> For the CrawlerToll operator's own check of the AI-training licence on Base mainnet. Please don't pay. <span id="terms">The licence covers the demo article only.</span></p>
 <h1>Buy the AI-training licence</h1>
-<p>Pays <strong>$0.50 USDC</strong> on Base for the demo article plus the right to train on it (tier <code>l0</code>), then checks the signed licence against the unlock service's published key.</p>
+<p>The demo article plus the right to train on it (tier <code>l0</code>) costs <strong>$0.50 USDC</strong> on Base. First, sign a free message (it moves no money) so the unlock service can tell you whether you already hold the licence. Only if you don't, you can buy it. Every licence is checked against the service's published key.</p>
 <p id="wallets">Looking for wallets in this browser…</p>
 <pre id="out">Waiting.</pre>
 <script type="module">
@@ -33,16 +33,48 @@ setTimeout(() => {
   const cb = document.createElement("button");
   cb.textContent = "Buy with Coinbase / Base account (passkey)";
   cb.style.marginRight = "8px";
-  cb.onclick = () => (coinbaseProvider ? buy(coinbaseProvider) : out("The Coinbase SDK did not load; reload the page."));
+  cb.onclick = () => (coinbaseProvider ? start(coinbaseProvider) : out("The Coinbase SDK did not load; reload the page."));
   box.appendChild(cb);
   for (const w of list) {
     const btn = document.createElement("button");
     btn.textContent = "Buy with " + w.info.name;
     btn.style.marginRight = "8px";
-    btn.onclick = () => buy(w.provider);
+    btn.onclick = () => start(w.provider);
     box.appendChild(btn);
   }
 }, 400);
+// Step 1: prove the address with a free message signature and ask whether it
+// already holds the licence. Only a non-holder is offered the pay button.
+async function start(wallet) {
+  try {
+    const [account] = await wallet.request({ method: "eth_requestAccounts" });
+    const message = "CrawlerToll licence check\nContent: " + CFG.cid + "\nAddress: " + account + "\nIssued: " + new Date().toISOString();
+    out("Sign the message in your wallet (free, no payment)…");
+    const hex = "0x" + [...new TextEncoder().encode(message)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    const signature = await wallet.request({ method: "personal_sign", params: [hex, account] });
+    const res = await fetch(CFG.registry + "/v1/sealed/" + CFG.cid + "/licence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address: account, message, signature }) });
+    const body = await res.json();
+    if (!res.ok) return out("Could not check (HTTP " + res.status + "): " + (body.error || ""));
+    if (body.licensed) return showLicence(body, "You already hold this licence: nothing to pay.\n");
+    const box = document.getElementById("wallets");
+    box.textContent = "";
+    const pay = document.createElement("button");
+    pay.textContent = "Buy the licence for $" + (CFG.micros / 1e6).toFixed(2);
+    pay.onclick = () => buy(wallet);
+    box.appendChild(pay);
+    out("You don't hold this licence yet.");
+  } catch (e) {
+    out("Stopped: " + (e && e.message ? e.message : e));
+  }
+}
+async function showLicence(body, head) {
+  const keys = await (await fetch(CFG.registry + "/.well-known/crawlertoll-keys.json")).json();
+  const k = keys.keys.find((y) => y.kid === body.licence.kid);
+  const { signature: sig, ...rest } = body.licence;
+  const pub = await crypto.subtle.importKey("raw", unb64(k.public_key), { name: "Ed25519" }, false, ["verify"]);
+  const ok = await crypto.subtle.verify({ name: "Ed25519" }, pub, unb64(sig), new TextEncoder().encode("ct_lic_v1:" + canon(rest)));
+  out(head + (ok ? "Licence VERIFIED against " : "Licence signature did NOT verify against ") + k.kid + "\n\n" + JSON.stringify(body.licence, null, 2));
+}
 async function buy(wallet) {
   try {
     out("Loading the offer…");
@@ -60,13 +92,7 @@ async function buy(wallet) {
     const res = await fetch(CFG.registry + "/v1/sealed/" + CFG.cid + "/key", { method: "POST", headers: { "Content-Type": "application/json", "PAYMENT-SIGNATURE": pay }, body: JSON.stringify({ tier_id: "l0" }) });
     const body = await res.json();
     if (!res.ok || !body.licence) return out("Not licensed (HTTP " + res.status + "): " + JSON.stringify(body).slice(0, 300));
-    const keys = await (await fetch(CFG.registry + "/.well-known/crawlertoll-keys.json")).json();
-    const k = keys.keys.find((y) => y.kid === body.licence.kid);
-    const { signature: sig, ...rest } = body.licence;
-    const pub = await crypto.subtle.importKey("raw", unb64(k.public_key), { name: "Ed25519" }, false, ["verify"]);
-    const ok = await crypto.subtle.verify({ name: "Ed25519" }, pub, unb64(sig), new TextEncoder().encode("ct_lic_v1:" + canon(rest)));
-    const head = body.already_licensed ? "You already hold this licence: nothing was charged.\n" : "";
-    out(head + (ok ? "Licence VERIFIED against " : "Licence signature did NOT verify against ") + k.kid + "\n\n" + JSON.stringify(body.licence, null, 2));
+    await showLicence(body, body.already_licensed ? "You already hold this licence: nothing was charged.\n" : "Bought. ");
   } catch (e) {
     out("Stopped: " + (e && e.message ? e.message : e));
   }
