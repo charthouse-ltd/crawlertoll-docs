@@ -17,7 +17,11 @@ const b64 = (u8) => btoa(String.fromCharCode(...u8));
 const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 const canon = (v) => Array.isArray(v) ? "[" + v.map(canon).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map((k) => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}" : JSON.stringify(v);
 // Wallets announce themselves (EIP-6963), as on the article pages; the legacy
-// window.ethereum is the fallback.
+// window.ethereum is the fallback; the Coinbase / Base account (passkey) is
+// always offered, as on the paywall (same SDK version as the plugin).
+const coinbase = import("https://esm.sh/@coinbase/wallet-sdk@4.4.0").catch(() => null);
+let coinbaseProvider = null;
+coinbase.then((m) => { if (m) coinbaseProvider = m.createCoinbaseWalletSDK({ appName: "CrawlerToll test", appChainIds: [8453] }).getProvider(); });
 const found = new Map();
 window.addEventListener("eip6963:announceProvider", (e) => { const d = e.detail; if (d && d.info && d.provider) found.set(d.info.uuid, d); });
 window.dispatchEvent(new Event("eip6963:requestProvider"));
@@ -25,8 +29,12 @@ setTimeout(() => {
   const list = [...found.values()];
   if (list.length === 0 && window.ethereum) list.push({ info: { name: "Browser wallet" }, provider: window.ethereum });
   const box = document.getElementById("wallets");
-  if (list.length === 0) { box.textContent = "No browser wallet found. Use a desktop browser with MetaMask, Rabby or the Coinbase Wallet extension."; return; }
   box.textContent = "";
+  const cb = document.createElement("button");
+  cb.textContent = "Buy with Coinbase / Base account (passkey)";
+  cb.style.marginRight = "8px";
+  cb.onclick = () => (coinbaseProvider ? buy(coinbaseProvider) : out("The Coinbase SDK did not load; reload the page."));
+  box.appendChild(cb);
   for (const w of list) {
     const btn = document.createElement("button");
     btn.textContent = "Buy with " + w.info.name;
