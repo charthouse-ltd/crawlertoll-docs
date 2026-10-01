@@ -33,6 +33,8 @@ jobs:
             if [ -n "${4:-}" ] && ! jq -e "$4" /tmp/body >/dev/null 2>&1; then fail="$fail\n- $1: unexpected body ($2): $(head -c 200 /tmp/body)"; fi
           }
           probe "unlock service health" "https://registry.crawlertoll.com/health" "200" '.status == "ok"'
+          # "payments": settlements failing at the facilitator while the service is up (registry H7).
+          probe "unlock service payments" "https://registry.crawlertoll.com/health" "200" '(.payments // "ok") != "failing"'
           probe "unlock service read path" "https://registry.crawlertoll.com/v1/stats" "200"
           probe "website (www)" "https://www.crawlertoll.com/" "200"
           probe "website (apex)" "https://crawlertoll.com/" "200"
@@ -51,7 +53,7 @@ jobs:
         run: |
           gh label create outage --color B60205 --description "Uptime monitor" -R "$GITHUB_REPOSITORY" 2>/dev/null || true
           open=$(gh issue list -R "$GITHUB_REPOSITORY" --label outage --state open --json number --jq '.[0].number')
-          body=$(printf "Checked %s UTC\n%s\n\nRunbook: registry down → Cloudflare status, \`wrangler tail\`, \`wrangler rollback\`." "$(date -u +'%Y-%m-%d %H:%M')" "$FAILED")
+          body=$(printf "Checked %s UTC\n%s\n\nRunbook: deploy/crawlertoll-registry/RUNBOOK.md (down → rollback; payments failing → switch facilitator)." "$(date -u +'%Y-%m-%d %H:%M')" "$FAILED")
           if [ -z "$open" ]; then
             gh issue create -R "$GITHUB_REPOSITORY" --label outage --title "Outage: CrawlerToll check failing" --body "$body"
           else
