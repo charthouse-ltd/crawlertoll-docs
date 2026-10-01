@@ -27,7 +27,10 @@ window.addEventListener("eip6963:announceProvider", (e) => { const d = e.detail;
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 setTimeout(async () => {
   const mine = savedLicence();
-  if (mine && mine.magic === "ct_lic_v1" && mine.content_id === CFG.cid) {
+  // A saved licence counts only if it still verifies; anything else is dropped.
+  if (mine && !(mine.magic === "ct_lic_v1" && mine.content_id === CFG.cid && (await licenceValid(mine)))) {
+    try { localStorage.removeItem(SAVED); } catch {}
+  } else if (mine) {
     document.getElementById("wallets").innerHTML = "";
     const other = document.createElement("a");
     other.href = "#";
@@ -87,14 +90,25 @@ function saveLicence(licence) {
 function savedLicence() {
   try { return JSON.parse(localStorage.getItem(SAVED) || "null"); } catch { return null; }
 }
+// True when the licence's signature checks out against the published key.
+async function licenceValid(licence) {
+  try {
+    const keys = await (await fetch(CFG.registry + "/.well-known/crawlertoll-keys.json")).json();
+    const k = keys.keys.find((y) => y.kid === licence.kid);
+    if (!k) return false;
+    const { signature: sig, ...rest } = licence;
+    const pub = await crypto.subtle.importKey("raw", unb64(k.public_key), { name: "Ed25519" }, false, ["verify"]);
+    return await crypto.subtle.verify({ name: "Ed25519" }, pub, unb64(sig), new TextEncoder().encode("ct_lic_v1:" + canon(rest)));
+  } catch {
+    return false;
+  }
+}
 async function showLicence(body, head) {
-  saveLicence(body.licence);
-  const keys = await (await fetch(CFG.registry + "/.well-known/crawlertoll-keys.json")).json();
-  const k = keys.keys.find((y) => y.kid === body.licence.kid);
-  const { signature: sig, ...rest } = body.licence;
-  const pub = await crypto.subtle.importKey("raw", unb64(k.public_key), { name: "Ed25519" }, false, ["verify"]);
-  const ok = await crypto.subtle.verify({ name: "Ed25519" }, pub, unb64(sig), new TextEncoder().encode("ct_lic_v1:" + canon(rest)));
-  out(head + (ok ? "Licence VERIFIED against " : "Licence signature did NOT verify against ") + k.kid + "\n\n" + JSON.stringify(body.licence, null, 2));
+  const ok = await licenceValid(body.licence);
+  if (ok) saveLicence(body.licence);
+  out(ok
+    ? head + "Licence VERIFIED against " + body.licence.kid + "\n\n" + JSON.stringify(body.licence, null, 2)
+    : "The licence returned did NOT verify against the published key; it was not saved.");
 }
 async function buy(wallet) {
   try {
