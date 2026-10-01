@@ -44,13 +44,13 @@ setTimeout(async () => {
   const box = document.getElementById("wallets");
   box.textContent = "";
   const cb = document.createElement("button");
-  cb.textContent = "Buy with Coinbase / Base account (passkey)";
+  cb.textContent = "Check / buy with Coinbase / Base account (passkey)";
   cb.style.marginRight = "8px";
   cb.onclick = () => (coinbaseProvider ? start(coinbaseProvider) : out("The Coinbase SDK did not load; reload the page."));
   box.appendChild(cb);
   for (const w of list) {
     const btn = document.createElement("button");
-    btn.textContent = "Buy with " + w.info.name;
+    btn.textContent = "Check / buy with " + w.info.name;
     btn.style.marginRight = "8px";
     btn.onclick = () => start(w.provider);
     box.appendChild(btn);
