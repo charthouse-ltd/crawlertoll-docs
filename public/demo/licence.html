@@ -25,7 +25,17 @@ coinbase.then((m) => { if (m) coinbaseProvider = m.createCoinbaseWalletSDK({ app
 const found = new Map();
 window.addEventListener("eip6963:announceProvider", (e) => { const d = e.detail; if (d && d.info && d.provider) found.set(d.info.uuid, d); });
 window.dispatchEvent(new Event("eip6963:requestProvider"));
-setTimeout(() => {
+setTimeout(async () => {
+  const mine = savedLicence();
+  if (mine && mine.magic === "ct_lic_v1" && mine.content_id === CFG.cid) {
+    document.getElementById("wallets").innerHTML = "";
+    const other = document.createElement("a");
+    other.href = "#";
+    other.textContent = "Check another wallet";
+    other.onclick = (e) => { e.preventDefault(); try { localStorage.removeItem(SAVED); } catch {} location.reload(); };
+    document.getElementById("wallets").appendChild(other);
+    return showLicence({ licence: mine }, "You hold this licence (saved on this device): nothing to pay.\n");
+  }
   const list = [...found.values()];
   if (list.length === 0 && window.ethereum) list.push({ info: { name: "Browser wallet" }, provider: window.ethereum });
   const box = document.getElementById("wallets");
@@ -67,7 +77,18 @@ async function start(wallet) {
     out("Stopped: " + (e && e.message ? e.message : e));
   }
 }
+// The holder keeps their licence on this device (like the paywall keeps the
+// article key), so a returning visitor is recognised at once, with no wallet
+// click and no server lookup; the signature is checked against the published key.
+const SAVED = "ct:licence:" + CFG.cid;
+function saveLicence(licence) {
+  try { localStorage.setItem(SAVED, JSON.stringify(licence)); } catch {}
+}
+function savedLicence() {
+  try { return JSON.parse(localStorage.getItem(SAVED) || "null"); } catch { return null; }
+}
 async function showLicence(body, head) {
+  saveLicence(body.licence);
   const keys = await (await fetch(CFG.registry + "/.well-known/crawlertoll-keys.json")).json();
   const k = keys.keys.find((y) => y.kid === body.licence.kid);
   const { signature: sig, ...rest } = body.licence;
