@@ -65,7 +65,8 @@ async function buy(wallet) {
     const { signature: sig, ...rest } = body.licence;
     const pub = await crypto.subtle.importKey("raw", unb64(k.public_key), { name: "Ed25519" }, false, ["verify"]);
     const ok = await crypto.subtle.verify({ name: "Ed25519" }, pub, unb64(sig), new TextEncoder().encode("ct_lic_v1:" + canon(rest)));
-    out((ok ? "Licence VERIFIED against " : "Licence signature did NOT verify against ") + k.kid + "\n\n" + JSON.stringify(body.licence, null, 2));
+    const head = body.already_licensed ? "You already hold this licence: nothing was charged.\n" : "";
+    out(head + (ok ? "Licence VERIFIED against " : "Licence signature did NOT verify against ") + k.kid + "\n\n" + JSON.stringify(body.licence, null, 2));
   } catch (e) {
     out("Stopped: " + (e && e.message ? e.message : e));
   }
