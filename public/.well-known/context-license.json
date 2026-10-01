@@ -1,0 +1,38 @@
+{
+  "$schema": "https://registry.crawlertoll.com/schemas/context-license/v1.json",
+  "version": "1.0.0",
+  "crawlertoll_registry": {
+    "token_sha256": "b65f239f9fe090a37f32f37fba04ffb8119568e3e514bd5a5ca085103d05965a"
+  },
+  "publisher": {
+    "name": "CrawlerToll",
+    "slug": "crawlertoll",
+    "domain": "www.crawlertoll.com",
+    "legal_entity": "Charthouse Ltd",
+    "contact": "hello@crawlertoll.com"
+  },
+  "endpoints": [
+    {
+      "name": "demo",
+      "url": "https://www.crawlertoll.com/demo/article.html",
+      "transport": "streamable-http",
+      "description": "Sealed test articles for the operator's payment checks."
+    }
+  ],
+  "pricing": {
+    "model": "per_query",
+    "currency": "USD",
+    "unit_price_micros": 1000000
+  },
+  "auth": {
+    "schemes": [
+      "x402"
+    ]
+  },
+  "terms_of_use": "https://www.crawlertoll.com/demo/article.html#terms",
+  "quality_signals": {
+    "uptime_sla_pct": 99,
+    "freshness_target_seconds": 86400,
+    "last_updated": "2026-10-01T11:57:08.445Z"
+  }
+}
