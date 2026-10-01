@@ -33,6 +33,6 @@
   "quality_signals": {
     "uptime_sla_pct": 99,
     "freshness_target_seconds": 86400,
-    "last_updated": "2026-10-01T11:57:08.445Z"
+    "last_updated": "2026-10-01T12:15:33.510Z"
   }
 }
